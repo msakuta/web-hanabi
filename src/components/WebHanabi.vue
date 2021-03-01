@@ -5,6 +5,12 @@
       {{card.toString()}}
     </span>
   </div>
+  <div>
+    Played cards:
+    <span v-for="(cards, cidx) in playedCards" :key="cidx" :class="['card', cards.length ? cards[0].getClass() : '']">
+      {{cards.length ? cards[0].toString() : ''}}
+    </span>
+  </div>
   <div v-for="(player, idx) in players" :key="idx">
     Player {{idx}}:
     <span v-for="(card, cidx) in player" :key="cidx" :class="['card', card.getClass()]">
@@ -24,7 +30,7 @@ class Card {
   }
 
   toString() {
-    return `${this.getColor()}${this.number} `;
+    return `${this.getColor()}${this.number + 1} `;
   }
 
   getColor() {
@@ -75,10 +81,12 @@ export default {
 
   setup(){
     const cards = genCards();
+    const playedCards = [...Array(5)].map(() => []);
     const players = [...Array(4)].map(() => [...Array(4)].map(() => drawCard(cards, Math.floor(Math.random() * cards.length))));
-    console.log(players)
+    console.log(playedCards)
     return {
       players,
+      playedCards,
       cards,
     }
   },
