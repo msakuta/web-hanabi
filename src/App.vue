@@ -1,20 +1,20 @@
 <template>
   <div class="appContainer">
     <h1>Web-hanabi</h1>
-    <web-brokus/>
+    <web-hanabi/>
     <hr>
     Powered by <a href="https://v3.vuejs.org/">Vue.js</a><br>
     Source on <a href="https://github.com/msakuta/web-hanabi">GitHub</a>.
   </div>
 </template>
 
-<script>
-import WebBrokus from './components/WebHanabi.vue'
+<script lang="ts">
+import WebHanabi from './components/WebHanabi.vue'
 
 export default {
   name: 'App',
   components: {
-    WebBrokus
+    WebHanabi
   }
 }
 </script>
