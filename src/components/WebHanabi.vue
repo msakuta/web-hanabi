@@ -23,21 +23,22 @@
   <div>
     Strikes: {{strikes}}
   </div>
-  <div v-for="(player, idx) in players" :key="idx">
-    {{turn === idx ? "* " : "  "}} Player {{idx}}:
-    <span v-for="(card, cidx) in player"
-      :key="cidx"
-      :class="['card', card.getClass(), turn === idx && cidx === selectedCard ? 'selected' : '']"
-      @click="playerCardClick(player, cidx)">
-      {{card.toString()}}
-    </span>
-    <button @click="playCard(player, selectedCard)">Play</button>
-    <button @click="discardCard(player, selectedCard)">Discard</button>
-  </div>
+  <player v-for="(player, idx) in players"
+    :key="idx"
+    :idx="idx"
+    :cards="player"
+    :isThisPlayer="thePlayer === idx"
+    :activeTurn="turn === idx"
+    :selectedCard="selectedCard"
+    @playerCardClick="(cidx) => playerCardClick(player, cidx)"
+    @playCard="(cidx) => playCard(player, cidx)"
+    @discardCard="(cidx) => discardCard(player, cidx)">
+  </player>
 </template>
 
 <script lang="ts">
 import { ref, reactive } from 'vue';
+import Player from './Player.vue';
 
 class Card {
   number = 1;
@@ -96,9 +97,13 @@ function drawCard(cards: Card[], index: number) {
 
 export default {
   name: 'WebHanabi',
+  components: {
+    Player,
+  },
 
   setup(){
     const cards = genCards();
+    const thePlayer = ref(0);
     const playedCards: Card[][] = reactive([...Array(5)].map(() => []));
     const discardedCards: Card[] = reactive([]);
     const players = reactive([...Array(4)].map(() => [...Array(4)].map(() => drawCard(cards, Math.floor(Math.random() * cards.length)))));
@@ -161,6 +166,7 @@ export default {
     }
 
     return {
+      thePlayer,
       players,
       selectedCard,
       turn,
@@ -217,6 +223,10 @@ a {
 .white {
   background-color: #3f3f3f;
   border: solid 1px  #ffffff;
+}
+.hidden {
+  background-color: #1f1f1f;
+  border: solid 1px  #7f7f7f;
 }
 .selected {
   border-width: 3px;
