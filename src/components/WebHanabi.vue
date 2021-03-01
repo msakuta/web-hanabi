@@ -13,13 +13,17 @@
   </div>
   <div v-for="(player, idx) in players" :key="idx">
     Player {{idx}}:
-    <span v-for="(card, cidx) in player" :key="cidx" :class="['card', card.getClass()]">
+    <span v-for="(card, cidx) in player"
+      :key="cidx"
+      :class="['card', card.getClass()]"
+      @click="playerCardClick(player, cidx)">
       {{card.toString()}}
     </span>
   </div>
 </template>
 
 <script lang="ts">
+import { reactive } from 'vue';
 
 class Card {
   number = 1;
@@ -81,13 +85,23 @@ export default {
 
   setup(){
     const cards = genCards();
-    const playedCards = [...Array(5)].map(() => []);
-    const players = [...Array(4)].map(() => [...Array(4)].map(() => drawCard(cards, Math.floor(Math.random() * cards.length))));
+    const playedCards: Card[][] = reactive([...Array(5)].map(() => []));
+    const players = reactive([...Array(4)].map(() => [...Array(4)].map(() => drawCard(cards, Math.floor(Math.random() * cards.length)))));
     console.log(playedCards)
+
+    function playerCardClick(player: Card[], cidx: number){
+      const card = player[cidx];
+      console.log(`Hello, you clicked ${card.toString()}`);
+      player.splice(cidx, 1);
+      playedCards[card.number].push(card);
+      player.push(drawCard(cards, Math.floor(Math.random() * cards.length)));
+    }
+
     return {
       players,
       playedCards,
       cards,
+      playerCardClick,
     }
   },
 }
