@@ -13,12 +13,12 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 
 class Card {
   number = 1;
   color = 1;
-  constructor(number, color) {
+  constructor(number: number, color: number) {
     this.number = number;
     this.color = color;
   }
@@ -53,7 +53,7 @@ class Card {
 }
 
 function genCards() {
-  let ret = [];
+  const ret: Card[] = [];
   for(let n = 0; n < 5; n++){
     for(let i = 0; i < (n == 0 ? 3 : n < 5 ? 2 : 1); i++){
       for(let c = 0; c < 4; c++){
@@ -64,7 +64,7 @@ function genCards() {
   return ret;
 }
 
-function drawCard(cards, index) {
+function drawCard(cards: Card[], index: number) {
   if(index === undefined)
     index = cards.length - 1;
   return cards.splice(index, 1)[0];
