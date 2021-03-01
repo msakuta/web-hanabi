@@ -1,5 +1,18 @@
 # web-hanabi
 
+A [Hanabi card game](https://en.wikipedia.org/wiki/Hanabi_(card_game)) on the web browser.
+
+Try it now on your browser! https://msakuta.github.io/web-hanabi/
+
+## What is this?
+
+Hanabi is a coorperative playing card game.
+There is also excellent web site at [hanabi.cards](https://hanabi.cards/en) that you can play with your friends or AIs.
+Then why would I reimplement it?
+
+Implementing a game by yourself improves the understanding of the game mechanics and
+hopefully we can implement an AI by ourselves, which is not possible with hanabi.cards.
+
 ## Project setup
 ```
 npm install
