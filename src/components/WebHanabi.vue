@@ -12,6 +12,12 @@
     </span>
   </div>
   <div>
+    Discarded cards:
+    <span v-for="(card, cidx) in discardedCards" :key="cidx" :class="['card', card.getClass()]">
+      {{card.toString()}}
+    </span>
+  </div>
+  <div>
     Tokens: {{tokens}}
   </div>
   <div>
@@ -21,10 +27,12 @@
     {{turn === idx ? "* " : "  "}} Player {{idx}}:
     <span v-for="(card, cidx) in player"
       :key="cidx"
-      :class="['card', card.getClass()]"
+      :class="['card', card.getClass(), turn === idx && cidx === selectedCard ? 'selected' : '']"
       @click="playerCardClick(player, cidx)">
       {{card.toString()}}
     </span>
+    <button @click="playCard(player, selectedCard)">Play</button>
+    <button @click="discardCard(player, selectedCard)">Discard</button>
   </div>
 </template>
 
@@ -92,7 +100,9 @@ export default {
   setup(){
     const cards = genCards();
     const playedCards: Card[][] = reactive([...Array(5)].map(() => []));
+    const discardedCards: Card[] = reactive([]);
     const players = reactive([...Array(4)].map(() => [...Array(4)].map(() => drawCard(cards, Math.floor(Math.random() * cards.length)))));
+    const selectedCard = ref(-1);
     const turn = ref(0);
     const tokens = ref(8);
     const strikes = ref(0);
@@ -105,6 +115,15 @@ export default {
       }
       const card = player[cidx];
       console.log(`You clicked ${card.toString()}`);
+      selectedCard.value = cidx;
+    }
+
+    function playCard(player: Card[], cidx: number){
+      if(cidx < 0){
+        console.log("Please select a card.");
+        return;
+      }
+      const card = player[cidx];
       player.splice(cidx, 1);
       if(playedCards[card.color].length === 0 && card.number !== 0){
         strikes.value++;
@@ -117,16 +136,34 @@ export default {
       }
       player.push(drawCard(cards, Math.floor(Math.random() * cards.length)));
       turn.value = (turn.value + 1) % players.length;
+      selectedCard.value = -1;
+    }
+
+    function discardCard(player: Card[], cidx: number){
+      if(cidx < 0){
+        console.log("Please select a card.");
+        return;
+      }
+      const card = player[cidx];
+      player.splice(cidx, 1);
+      discardedCards.push(card);
+      player.push(drawCard(cards, Math.floor(Math.random() * cards.length)));
+      turn.value = (turn.value + 1) % players.length;
+      tokens.value = Math.min(8, tokens.value + 1);
     }
 
     return {
       players,
+      selectedCard,
       turn,
       tokens,
       strikes,
       playedCards,
+      discardedCards,
       cards,
       playerCardClick,
+      playCard,
+      discardCard,
     }
   },
 }
@@ -172,6 +209,9 @@ a {
 .white {
   background-color: #3f3f3f;
   border: solid 1px  #ffffff;
+}
+.selected {
+  border-width: 3px;
 }
 .outerFrame {
   position: relative;
