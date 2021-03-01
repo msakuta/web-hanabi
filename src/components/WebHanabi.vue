@@ -119,8 +119,12 @@ export default {
     }
 
     function playCard(player: Card[], cidx: number){
+      if(turn.value !== players.indexOf(player)){
+        alert("Hey, it's not your turn!");
+        return;
+      }
       if(cidx < 0){
-        console.log("Please select a card.");
+        alert("Please select a card.");
         return;
       }
       const card = player[cidx];
@@ -140,8 +144,12 @@ export default {
     }
 
     function discardCard(player: Card[], cidx: number){
+     if(turn.value !== players.indexOf(player)){
+        alert("Hey, it's not your turn!");
+        return;
+      }
       if(cidx < 0){
-        console.log("Please select a card.");
+        alert("Please select a card.");
         return;
       }
       const card = player[cidx];
