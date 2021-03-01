@@ -12,7 +12,7 @@
     </span>
   </div>
   <div v-for="(player, idx) in players" :key="idx">
-    Player {{idx}}:
+    {{turn === idx ? "* " : "  "}} Player {{idx}}:
     <span v-for="(card, cidx) in player"
       :key="cidx"
       :class="['card', card.getClass()]"
@@ -23,7 +23,7 @@
 </template>
 
 <script lang="ts">
-import { reactive } from 'vue';
+import { ref, reactive } from 'vue';
 
 class Card {
   number = 1;
@@ -66,7 +66,7 @@ function genCards() {
   const ret: Card[] = [];
   for(let n = 0; n < 5; n++){
     for(let i = 0; i < (n == 0 ? 3 : n < 5 ? 2 : 1); i++){
-      for(let c = 0; c < 4; c++){
+      for(let c = 0; c < 5; c++){
         ret.push(new Card(n, c));
       }
     }
@@ -87,18 +87,25 @@ export default {
     const cards = genCards();
     const playedCards: Card[][] = reactive([...Array(5)].map(() => []));
     const players = reactive([...Array(4)].map(() => [...Array(4)].map(() => drawCard(cards, Math.floor(Math.random() * cards.length)))));
+    const turn = ref(0);
     console.log(playedCards)
 
     function playerCardClick(player: Card[], cidx: number){
+      if(turn.value !== players.indexOf(player)){
+        console.log("Hey, it's not your turn!");
+        return;
+      }
       const card = player[cidx];
       console.log(`Hello, you clicked ${card.toString()}`);
       player.splice(cidx, 1);
       playedCards[card.number].push(card);
       player.push(drawCard(cards, Math.floor(Math.random() * cards.length)));
+      turn.value = (turn.value + 1) % players.length;
     }
 
     return {
       players,
+      turn,
       playedCards,
       cards,
       playerCardClick,
