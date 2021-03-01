@@ -1,13 +1,85 @@
 <template>
-  <h1>Hello</h1>
+  <div>
+    Remaining cards:
+    <span v-for="(card, cidx) in cards" :key="cidx" :class="['card', card.getClass()]">
+      {{card.toString()}}
+    </span>
+  </div>
+  <div v-for="(player, idx) in players" :key="idx">
+    Player {{idx}}:
+    <span v-for="(card, cidx) in player" :key="cidx" :class="['card', card.getClass()]">
+      {{card.toString()}}
+    </span>
+  </div>
 </template>
 
 <script>
+
+class Card {
+  number = 1;
+  color = 1;
+  constructor(number, color) {
+    this.number = number;
+    this.color = color;
+  }
+
+  toString() {
+    return `${this.getColor()}${this.number} `;
+  }
+
+  getColor() {
+    switch(this.color){
+      case 0: return "r";
+      case 1: return "g";
+      case 2: return "b";
+      case 3: return "y";
+      case 4: return "w";
+      case 5: return "x";
+      default: return "?";
+    }
+  }
+
+  getClass() {
+    switch(this.color){
+      case 0: return "red";
+      case 1: return "green";
+      case 2: return "blue";
+      case 3: return "yellow";
+      case 4: return "white";
+      case 5: return "rainbow";
+      default: return "";
+    }
+  }
+}
+
+function genCards() {
+  let ret = [];
+  for(let n = 0; n < 5; n++){
+    for(let i = 0; i < (n == 0 ? 3 : n < 5 ? 2 : 1); i++){
+      for(let c = 0; c < 4; c++){
+        ret.push(new Card(n, c));
+      }
+    }
+  }
+  return ret;
+}
+
+function drawCard(cards, index) {
+  if(index === undefined)
+    index = cards.length - 1;
+  return cards.splice(index, 1)[0];
+}
+
 export default {
   name: 'WebHanabi',
 
   setup(){
+    const cards = genCards();
+    const players = [...Array(4)].map(() => [...Array(4)].map(() => drawCard(cards, Math.floor(Math.random() * cards.length))));
+    console.log(players)
     return {
+      players,
+      cards,
     }
   },
 }
@@ -28,6 +100,31 @@ li {
 }
 a {
   color: #42b983;
+}
+.card {
+  line-height: 3em;
+  padding: 4px;
+  margin: 4px;
+}
+.red {
+  background-color: #3f0000;
+  border: solid 1px  #af0000;
+}
+.green {
+  background-color: #003f00;
+  border: solid 1px  #00af00;
+}
+.blue {
+  background-color: #00003f;
+  border: solid 1px  #0000ff;
+}
+.yellow {
+  background-color: #3f3f00;
+  border: solid 1px  #ffff00;
+}
+.white {
+  background-color: #3f3f3f;
+  border: solid 1px  #ffffff;
 }
 .outerFrame {
   position: relative;
