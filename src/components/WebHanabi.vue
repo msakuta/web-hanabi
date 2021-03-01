@@ -7,9 +7,15 @@
   </div>
   <div>
     Played cards:
-    <span v-for="(cards, cidx) in playedCards" :key="cidx" :class="['card', cards.length ? cards[0].getClass() : '']">
-      {{cards.length ? cards[0].toString() : ''}}
+    <span v-for="(cards, cidx) in playedCards" :key="cidx" :class="['card', cards.length ? cards[cards.length-1].getClass() : '']">
+      {{cards.length ? cards[cards.length-1].toString() : ''}}
     </span>
+  </div>
+  <div>
+    Tokens: {{tokens}}
+  </div>
+  <div>
+    Strikes: {{strikes}}
   </div>
   <div v-for="(player, idx) in players" :key="idx">
     {{turn === idx ? "* " : "  "}} Player {{idx}}:
@@ -88,6 +94,8 @@ export default {
     const playedCards: Card[][] = reactive([...Array(5)].map(() => []));
     const players = reactive([...Array(4)].map(() => [...Array(4)].map(() => drawCard(cards, Math.floor(Math.random() * cards.length)))));
     const turn = ref(0);
+    const tokens = ref(8);
+    const strikes = ref(0);
     console.log(playedCards)
 
     function playerCardClick(player: Card[], cidx: number){
@@ -96,9 +104,17 @@ export default {
         return;
       }
       const card = player[cidx];
-      console.log(`Hello, you clicked ${card.toString()}`);
+      console.log(`You clicked ${card.toString()}`);
       player.splice(cidx, 1);
-      playedCards[card.number].push(card);
+      if(playedCards[card.color].length === 0 && card.number !== 0){
+        strikes.value++;
+      }
+      else if(0 < playedCards[card.color].length && card.number !== playedCards[card.color][playedCards[card.color].length-1].number + 1){
+        strikes.value++;
+      }
+      else{
+        playedCards[card.color].push(card);
+      }
       player.push(drawCard(cards, Math.floor(Math.random() * cards.length)));
       turn.value = (turn.value + 1) % players.length;
     }
@@ -106,6 +122,8 @@ export default {
     return {
       players,
       turn,
+      tokens,
+      strikes,
       playedCards,
       cards,
       playerCardClick,
