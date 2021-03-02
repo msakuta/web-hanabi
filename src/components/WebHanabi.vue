@@ -32,7 +32,9 @@
     :selectedCard="selectedCard"
     @playerCardClick="(cidx) => playerCardClick(player, cidx)"
     @playCard="(cidx) => playCard(player, cidx)"
-    @discardCard="(cidx) => discardCard(player, cidx)">
+    @discardCard="(cidx) => discardCard(player, cidx)"
+    @hintNumber="(number) => hintNumber(player, number)"
+    @hintColor="(color) => hintColor(player, color)">
   </player>
 </template>
 
@@ -112,6 +114,38 @@ export default {
       tokens.value = Math.min(8, tokens.value + 1);
     }
 
+    function hintNumber(player: Card[], number: number) {
+      if(players.indexOf(player) === thePlayer.value){
+        alert("You can't hint yourself!");
+        return;
+      }
+      if(tokens.value <= 0){
+        alert("You used up all tokens!");
+        return;
+      }
+      for(let i = 0; i < player.length; i++){
+        player[i].hintNumber(number);
+      }
+      tokens.value--;
+      turn.value = (turn.value + 1) % players.length;
+    }
+
+    function hintColor(player: Card[], color: number) {
+      if(players.indexOf(player) === thePlayer.value){
+        alert("You can't hint yourself!");
+        return;
+      }
+      if(tokens.value <= 0){
+        alert("You used up all tokens!");
+        return;
+      }
+      for(let i = 0; i < player.length; i++){
+        player[i].hintColor(color);
+      }
+      tokens.value--;
+      turn.value = (turn.value + 1) % players.length;
+    }
+
     return {
       thePlayer,
       players,
@@ -125,6 +159,8 @@ export default {
       playerCardClick,
       playCard,
       discardCard,
+      hintNumber,
+      hintColor,
     }
   },
 }

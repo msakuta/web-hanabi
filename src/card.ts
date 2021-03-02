@@ -1,6 +1,8 @@
 export class Card {
   number = 1;
   color = 1;
+  possibleNumbers = Array<boolean>(5).fill(true);
+  possibleColors = Array<boolean>(5).fill(true);
   constructor(number: number, color: number) {
     this.number = number;
     this.color = color;
@@ -32,6 +34,26 @@ export class Card {
       case 4: return "white";
       case 5: return "rainbow";
       default: return "";
+    }
+  }
+
+  hintNumber(number: number) {
+    if(this.number === number){
+      for(let j = 0; j < this.possibleNumbers.length; j++){
+        if(j !== number)
+          this.possibleNumbers[j] = false;
+      }
+      return;
+    }
+  }
+
+  hintColor(color: number) {
+    if(this.color === color){
+      for(let j = 0; j < this.possibleColors.length; j++){
+        if(j !== color)
+          this.possibleColors[j] = false;
+      }
+      return;
     }
   }
 }

@@ -7,18 +7,37 @@
         :class="['card', isThisPlayer ? 'hidden' : card.getClass(), activeTurn && cidx === selectedCard ? 'selected' : '']"
         :style="`left: ${cidx * 5}em;`"
         @click="playerCardClick(cidx)">
-        <div style="font-size: +2">
-          {{isThisPlayer ? "&nbsp;&nbsp;" : card.toString()}}
+        <div style="font-size: +2; font-weight: bold;">
+          {{isThisPlayer ? "??" : card.toString()}}
         </div>
-        <span v-for="j in Array(5).fill().map((_, i)=>i)" :key="j" :style="`left: ${j * 5 + 1}px;`">{{j + 1}}</span><br>
-        <span v-for="j in Array(5).fill().map((_, i)=>i)" :key="j" :style="`left: ${j * 5 + 1}px;`">{{getColor(j + 1)}}</span>
+        <span v-for="j in Array(5).fill().map((_, i)=>i)"
+          :key="j"
+          :class="card.possibleNumbers[j] ? '' : 'notPossible'"
+          :style="`left: ${j * 5 + 1}px;`">
+          {{j + 1}}
+        </span>
+        <br>
+        <span v-for="j in Array(5).fill().map((_, i)=>i)"
+          :key="j"
+          :class="card.possibleColors[j] ? '' : 'notPossible'"
+          :style="`left: ${j * 5 + 1}px;`">
+          {{getColor(j)}}
+        </span>
       </span>
     </span>
     <button @click="playCard(selectedCard)">Play</button>
     <button @click="discardCard(selectedCard)">Discard</button>
     Hint:
-    <button v-for="i in Array(5).fill().map((_,i)=>i)" :key="i">{{i}}</button>
-    <button v-for="i in Array(5).fill().map((_,i)=>i)" :key="i">{{getColor(i)}}</button>
+    <button v-for="i in Array(5).fill().map((_,i)=>i)"
+      :key="i"
+      @click="hintNumber(i)">
+      {{i + 1}}
+    </button>
+    <button v-for="i in Array(5).fill().map((_,i)=>i)"
+      :key="i"
+      @click="hintColor(i)">
+      {{getColor(i)}}
+    </button>
   </div>
 </template>
 
@@ -50,6 +69,8 @@ export default {
       playCard: (idx: number) => context.emit("playCard", idx),
       discardCard: (idx: number) => context.emit("discardCard", idx),
       getColor: (i: number) => Card.prototype.getColor(i),
+      hintNumber: (idx: number) => context.emit("hintNumber", idx),
+      hintColor: (idx: number) => context.emit("hintColor", idx),
     }
   },
 }
@@ -63,6 +84,7 @@ export default {
   width: 3em;
   padding: 4px;
   margin: 4px;
+  font-family: 'Courier New', Courier, monospace;
 }
 .red {
   background-color: #3f0000;
@@ -105,5 +127,8 @@ export default {
 .inactiveFrame {
   border: solid 1px #1f2f2f;
   background-color: #001f1f;
+}
+.notPossible {
+  color: #1c1e2f
 }
 </style>
