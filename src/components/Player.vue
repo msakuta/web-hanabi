@@ -1,11 +1,14 @@
 <template>
-  <div>
+  <div :class="['frame', activeTurn ? 'activeFrame' : 'inactiveFrame']">
     {{activeTurn ? "* " : "  "}} Player {{idx}}:
-    <span v-for="(card, cidx) in cards"
-      :key="cidx"
-      :class="['card', isThisPlayer ? 'hidden' : card.getClass(), activeTurn && cidx === selectedCard ? 'selected' : '']"
-      @click="playerCardClick(cidx)">
-      {{isThisPlayer ? "&nbsp;&nbsp;" : card.toString()}}
+    <span style="position: relative; display: inline-block; left: 0; top: 0; width: 25em; height: 5em;">
+      <span v-for="(card, cidx) in cards"
+        :key="cidx"
+        :class="['card', isThisPlayer ? 'hidden' : card.getClass(), activeTurn && cidx === selectedCard ? 'selected' : '']"
+        :style="`left: ${cidx * 5}em;`"
+        @click="playerCardClick(cidx)">
+        {{isThisPlayer ? "&nbsp;&nbsp;" : card.toString()}}
+      </span>
     </span>
     <button @click="playCard(selectedCard)">Play</button>
     <button @click="discardCard(selectedCard)">Discard</button>
@@ -46,7 +49,7 @@ export default {
 
 <style scoped>
 .card {
-  position: relative;
+  position: absolute;
   line-height: 3em;
   left: 0;
   width: 3em;
@@ -79,5 +82,19 @@ export default {
 }
 .selected {
   border-width: 3px;
+}
+.frame {
+  left: 0;
+  width: 38em;
+  padding: 4px;
+  margin: 4px;
+}
+.activeFrame {
+  border: solid 1px #3f4f4f;
+  background-color: #0f2f2f;
+}
+.inactiveFrame {
+  border: solid 1px #1f2f2f;
+  background-color: #001f1f;
 }
 </style>
