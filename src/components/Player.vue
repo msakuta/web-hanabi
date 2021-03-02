@@ -7,11 +7,18 @@
         :class="['card', isThisPlayer ? 'hidden' : card.getClass(), activeTurn && cidx === selectedCard ? 'selected' : '']"
         :style="`left: ${cidx * 5}em;`"
         @click="playerCardClick(cidx)">
-        {{isThisPlayer ? "&nbsp;&nbsp;" : card.toString()}}
+        <div style="font-size: +2">
+          {{isThisPlayer ? "&nbsp;&nbsp;" : card.toString()}}
+        </div>
+        <span v-for="j in Array(5).fill().map((_, i)=>i)" :key="j" :style="`left: ${j * 5 + 1}px;`">{{j + 1}}</span><br>
+        <span v-for="j in Array(5).fill().map((_, i)=>i)" :key="j" :style="`left: ${j * 5 + 1}px;`">{{getColor(j + 1)}}</span>
       </span>
     </span>
     <button @click="playCard(selectedCard)">Play</button>
     <button @click="discardCard(selectedCard)">Discard</button>
+    Hint:
+    <button v-for="i in Array(5).fill().map((_,i)=>i)" :key="i">{{i}}</button>
+    <button v-for="i in Array(5).fill().map((_,i)=>i)" :key="i">{{getColor(i)}}</button>
   </div>
 </template>
 
@@ -42,6 +49,7 @@ export default {
       playerCardClick: (idx: number) => context.emit("playerCardClick", idx),
       playCard: (idx: number) => context.emit("playCard", idx),
       discardCard: (idx: number) => context.emit("discardCard", idx),
+      getColor: (i: number) => Card.prototype.getColor(i),
     }
   },
 }
@@ -49,8 +57,8 @@ export default {
 
 <style scoped>
 .card {
+  line-height: 1.2em;
   position: absolute;
-  line-height: 3em;
   left: 0;
   width: 3em;
   padding: 4px;
@@ -84,6 +92,7 @@ export default {
   border-width: 3px;
 }
 .frame {
+  line-height: 3em;
   left: 0;
   width: 38em;
   padding: 4px;

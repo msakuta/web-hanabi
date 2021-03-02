@@ -10,8 +10,9 @@ export class Card {
     return `${this.getColor()}${this.number + 1} `;
   }
 
-  getColor() {
-    switch(this.color){
+  getColor(color: number | null = null) {
+    color = color ?? this.color;
+    switch(color){
       case 0: return "r";
       case 1: return "g";
       case 2: return "b";
