@@ -1,5 +1,8 @@
 <template>
-  <div>
+  <label>
+    <input type="checkbox" v-model="debugMode">Debug mode
+  </label>
+  <div v-if="debugMode">
     Remaining cards:
     <span v-for="(card, cidx) in cards" :key="cidx" :class="['card', card.getClass()]">
       {{card.toString()}}
@@ -27,7 +30,7 @@
     :key="idx"
     :idx="idx"
     :cards="player"
-    :isThisPlayer="thePlayer === idx"
+    :isThisPlayer="!debugMode && thePlayer === idx"
     :activeTurn="turn === idx"
     :selectedCard="selectedCard"
     @playerCardClick="(cidx) => playerCardClick(player, cidx)"
@@ -60,6 +63,7 @@ export default {
     const turn = ref(0);
     const tokens = ref(8);
     const strikes = ref(0);
+    const debugMode = ref(false);
     console.log(playedCards)
 
     function playerCardClick(player: Card[], cidx: number){
@@ -161,6 +165,7 @@ export default {
       discardCard,
       hintNumber,
       hintColor,
+      debugMode,
     }
   },
 }
