@@ -14,43 +14,7 @@
 
 <script lang="ts">
 import { SetupContext } from 'vue';
-
-class Card {
-  number = 1;
-  color = 1;
-  constructor(number: number, color: number) {
-    this.number = number;
-    this.color = color;
-  }
-
-  toString() {
-    return `${this.getColor()}${this.number + 1} `;
-  }
-
-  getColor() {
-    switch(this.color){
-      case 0: return "r";
-      case 1: return "g";
-      case 2: return "b";
-      case 3: return "y";
-      case 4: return "w";
-      case 5: return "x";
-      default: return "?";
-    }
-  }
-
-  getClass() {
-    switch(this.color){
-      case 0: return "red";
-      case 1: return "green";
-      case 2: return "blue";
-      case 3: return "yellow";
-      case 4: return "white";
-      case 5: return "rainbow";
-      default: return "";
-    }
-  }
-}
+import { Card } from '../card';
 
 type Props = {
   idx: number;
