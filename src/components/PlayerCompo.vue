@@ -1,13 +1,17 @@
 <template>
   <div :class="['frame', activeTurn ? 'activeFrame' : 'inactiveFrame']">
-    {{activeTurn ? "* " : "  "}} Player {{idx}}:
-    <label>
-      <input type="checkbox" :checked="player.auto" @click="playerAutoClick">Auto
-    </label>
-    <span style="position: relative; display: inline-block; left: 0; top: 0; width: 25em; height: 5em;">
+    <span style="position: absolute; left: 0; right: 0; width: 8em; height: 5em">
+      <div>
+        {{activeTurn ? "* " : "  "}} Player {{idx}}:
+      </div>
+      <label>
+        <input type="checkbox" :checked="player.auto" @click="playerAutoClick">Auto
+      </label>
+    </span>
+    <span style="position: absolute; left: 8em; top: 0; width: 20em; height: 5em;">
       <span v-for="(card, cidx) in player.cards"
         :key="cidx"
-        :class="['card', isThisPlayer ? 'hidden' : card.getClass(), activeTurn && cidx === selectedCard ? 'selected' : '']"
+        :class="['card', 'noselect', isThisPlayer ? 'hidden' : card.getClass(), activeTurn && cidx === selectedCard ? 'selected' : '']"
         :style="`left: ${cidx * 5}em;`"
         @click="playerCardClick(cidx)">
         <div style="font-size: +2; font-weight: bold;">
@@ -28,19 +32,23 @@
         </span>
       </span>
     </span>
-    <button @click="playCard(selectedCard)">Play</button>
-    <button @click="discardCard(selectedCard)">Discard</button>
-    Hint:
-    <button v-for="i in Array(5).fill().map((_,i)=>i)"
-      :key="i"
-      @click="hintNumber(i)">
-      {{i + 1}}
-    </button>
-    <button v-for="i in Array(5).fill().map((_,i)=>i)"
-      :key="i"
-      @click="hintColor(i)">
-      {{getColor(i)}}
-    </button>
+    <div style="position: absolute; left: 28em; width: 5em; height: 3em;">
+      <button @click="playCard(selectedCard)">Play</button>
+      <button @click="discardCard(selectedCard)">Discard</button>
+    </div>
+    <div style="position: absolute; left: 8em; top: 5em; width: 20em; height: 2em">
+      Hint:
+      <button v-for="i in Array(5).fill().map((_,i)=>i)"
+        :key="i"
+        @click="hintNumber(i)">
+        {{i + 1}}
+      </button>
+      <button v-for="i in Array(5).fill().map((_,i)=>i)"
+        :key="i"
+        @click="hintColor(i)">
+        {{getColor(i)}}
+      </button>
+    </div>
   </div>
 </template>
 
@@ -99,6 +107,18 @@ export default {
   margin: 4px;
   font-family: 'Courier New', Courier, monospace;
 }
+/* Class that prevents text selection by mouse dragging.
+  The style is not defined by standard, so we'd write down browser-dependent styles for major browsers.
+  Support by IE11 is somewhat incomplete since Ctrl+A selects the text in elements even with this style. */
+.noselect{
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none;   /* Chrome/Safari/Opera */
+  -khtml-user-select: none;    /* Konqueror */
+  -moz-user-select: none;      /* Firefox */
+  -ms-user-select: none;       /* IE/Edge */
+  user-select: none;           /* non-prefixed version, currently
+                  not supported by any browser */
+}
 .red {
   background-color: #3f0000;
   border: solid 1px  #af0000;
@@ -127,9 +147,11 @@ export default {
   border-width: 3px;
 }
 .frame {
+  position: relative;
   line-height: 3em;
   left: 0;
-  width: 38em;
+  width: 35em;
+  height: 7em;
   padding: 4px;
   margin: 4px;
 }
