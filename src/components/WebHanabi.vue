@@ -70,7 +70,7 @@ export default {
     function tryNextMove(){
       const playerInTurn = players[turn.value];
       if(playerInTurn.auto){
-        setTimeout(() => playerInTurn.think(playCard, discardCard), 1000);
+        setTimeout(() => playerInTurn.think(players, playCard, discardCard, hintNumber), 1000);
       }
     }
 
@@ -133,7 +133,7 @@ export default {
         alert("Hey, it's not your turn!");
         return;
       }
-      if(players.indexOf(player) === thePlayer.value){
+      if(!autoPlay && players.indexOf(player) === thePlayer.value || players.indexOf(player) === turn.value){
         alert("You can't hint yourself!");
         return;
       }
@@ -154,7 +154,7 @@ export default {
         alert("Hey, it's not your turn!");
         return;
       }
-      if(players.indexOf(player) === thePlayer.value){
+      if(!autoPlay && players.indexOf(player) === thePlayer.value || players.indexOf(player) === turn.value){
         alert("You can't hint yourself!");
         return;
       }
