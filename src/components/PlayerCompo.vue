@@ -1,8 +1,11 @@
 <template>
   <div :class="['frame', activeTurn ? 'activeFrame' : 'inactiveFrame']">
     {{activeTurn ? "* " : "  "}} Player {{idx}}:
+    <label>
+      <input type="checkbox" @click="playerAutoClick">Auto
+    </label>
     <span style="position: relative; display: inline-block; left: 0; top: 0; width: 25em; height: 5em;">
-      <span v-for="(card, cidx) in cards"
+      <span v-for="(card, cidx) in player.cards"
         :key="cidx"
         :class="['card', isThisPlayer ? 'hidden' : card.getClass(), activeTurn && cidx === selectedCard ? 'selected' : '']"
         :style="`left: ${cidx * 5}em;`"
@@ -43,28 +46,37 @@
 
 <script lang="ts">
 import { SetupContext } from 'vue';
-import { Card } from '../card';
+import { Card, drawCard } from '../card';
+
+export class Player {
+  auto = false;
+  cards: Card[];
+  constructor(cards: Card[]){
+    this.cards = [...Array(4)].map(() => drawCard(cards, Math.floor(Math.random() * cards.length)));
+  }
+}
 
 type Props = {
   idx: number;
   isThisPlayer: boolean;
-  cards: Card[];
+  player: Player;
   selectedCard: number;
   activeTurn: boolean;
 };
 
 export default {
-  name: 'Player',
+  name: 'Player ',
   props: {
     idx: Number,
     isThisPlayer: Boolean,
-    cards: Array,
+    player: Object,
     selectedCard: Number,
     activeTurn: Boolean,
   },
 
   setup(props: Props, context: SetupContext){
     return {
+      playerAutoClick: () => context.emit("playerAutoClick"),
       playerCardClick: (idx: number) => context.emit("playerCardClick", idx),
       playCard: (idx: number) => context.emit("playCard", idx),
       discardCard: (idx: number) => context.emit("discardCard", idx),

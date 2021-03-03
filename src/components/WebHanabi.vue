@@ -26,31 +26,32 @@
   <div>
     Strikes: {{strikes}}
   </div>
-  <player v-for="(player, idx) in players"
+  <player-compo v-for="(player, idx) in players"
     :key="idx"
     :idx="idx"
-    :cards="player"
+    :player="player"
     :isThisPlayer="!debugMode && thePlayer === idx"
     :activeTurn="turn === idx"
     :selectedCard="selectedCard"
+    @playerAutoClick="player.auto = !player.auto"
     @playerCardClick="(cidx) => playerCardClick(player, cidx)"
     @playCard="(cidx) => playCard(player, cidx)"
     @discardCard="(cidx) => discardCard(player, cidx)"
     @hintNumber="(number) => hintNumber(player, number)"
     @hintColor="(color) => hintColor(player, color)">
-  </player>
+  </player-compo>
 </template>
 
 <script lang="ts">
 import { ref, reactive } from 'vue';
-import Player from './Player.vue';
+import PlayerCompo, { Player } from './PlayerCompo.vue';
 import { Card, genCards, drawCard } from '../card';
 
 
 export default {
   name: 'WebHanabi',
   components: {
-    Player,
+    PlayerCompo,
   },
 
   setup(){
@@ -58,7 +59,7 @@ export default {
     const thePlayer = ref(0);
     const playedCards: Card[][] = reactive([...Array(5)].map(() => []));
     const discardedCards: Card[] = reactive([]);
-    const players = reactive([...Array(4)].map(() => [...Array(4)].map(() => drawCard(cards, Math.floor(Math.random() * cards.length)))));
+    const players = reactive([...Array(4)].map(() => new Player(cards)));
     const selectedCard = ref(-1);
     const turn = ref(0);
     const tokens = ref(8);
@@ -66,17 +67,17 @@ export default {
     const debugMode = ref(false);
     console.log(playedCards)
 
-    function playerCardClick(player: Card[], cidx: number){
+    function playerCardClick(player: Player, cidx: number){
       if(turn.value !== players.indexOf(player)){
         console.log("Hey, it's not your turn!");
         return;
       }
-      const card = player[cidx];
+      const card = player.cards[cidx];
       console.log(`You clicked ${card.toString()}`);
       selectedCard.value = cidx;
     }
 
-    function playCard(player: Card[], cidx: number){
+    function playCard(player: Player, cidx: number){
       if(turn.value !== players.indexOf(player)){
         alert("Hey, it's not your turn!");
         return;
@@ -85,8 +86,8 @@ export default {
         alert("Please select a card.");
         return;
       }
-      const card = player[cidx];
-      player.splice(cidx, 1);
+      const card = player.cards[cidx];
+      player.cards.splice(cidx, 1);
       if(playedCards[card.color].length === 0 && card.number !== 0){
         strikes.value++;
       }
@@ -96,12 +97,12 @@ export default {
       else{
         playedCards[card.color].push(card);
       }
-      player.push(drawCard(cards, Math.floor(Math.random() * cards.length)));
+      player.cards.push(drawCard(cards, Math.floor(Math.random() * cards.length)));
       turn.value = (turn.value + 1) % players.length;
       selectedCard.value = -1;
     }
 
-    function discardCard(player: Card[], cidx: number){
+    function discardCard(player: Player, cidx: number){
      if(turn.value !== players.indexOf(player)){
         alert("Hey, it's not your turn!");
         return;
@@ -110,15 +111,15 @@ export default {
         alert("Please select a card.");
         return;
       }
-      const card = player[cidx];
-      player.splice(cidx, 1);
+      const card = player.cards[cidx];
+      player.cards.splice(cidx, 1);
       discardedCards.push(card);
-      player.push(drawCard(cards, Math.floor(Math.random() * cards.length)));
+      player.cards.push(drawCard(cards, Math.floor(Math.random() * cards.length)));
       turn.value = (turn.value + 1) % players.length;
       tokens.value = Math.min(8, tokens.value + 1);
     }
 
-    function hintNumber(player: Card[], number: number) {
+    function hintNumber(player: Player, number: number) {
       if(players.indexOf(player) === thePlayer.value){
         alert("You can't hint yourself!");
         return;
@@ -127,14 +128,14 @@ export default {
         alert("You used up all tokens!");
         return;
       }
-      for(let i = 0; i < player.length; i++){
-        player[i].hintNumber(number);
+      for(let i = 0; i < player.cards.length; i++){
+        player.cards[i].hintNumber(number);
       }
       tokens.value--;
       turn.value = (turn.value + 1) % players.length;
     }
 
-    function hintColor(player: Card[], color: number) {
+    function hintColor(player: Player, color: number) {
       if(players.indexOf(player) === thePlayer.value){
         alert("You can't hint yourself!");
         return;
@@ -143,8 +144,8 @@ export default {
         alert("You used up all tokens!");
         return;
       }
-      for(let i = 0; i < player.length; i++){
-        player[i].hintColor(color);
+      for(let i = 0; i < player.cards.length; i++){
+        player.cards[i].hintColor(color);
       }
       tokens.value--;
       turn.value = (turn.value + 1) % players.length;
