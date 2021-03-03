@@ -54,16 +54,8 @@
 
 <script lang="ts">
 import { SetupContext } from 'vue';
-import { Card, drawCard } from '../card';
-
-export class Player {
-  auto = false;
-  cards: Card[];
-  constructor(cards: Card[], auto = false){
-    this.auto = auto;
-    this.cards = [...Array(4)].map(() => drawCard(cards, Math.floor(Math.random() * cards.length)));
-  }
-}
+import { Card } from '../card';
+import { Player } from '../player';
 
 type Props = {
   idx: number;

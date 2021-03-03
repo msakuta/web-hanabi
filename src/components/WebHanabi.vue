@@ -44,8 +44,9 @@
 
 <script lang="ts">
 import { ref, reactive } from 'vue';
-import PlayerCompo, { Player } from './PlayerCompo.vue';
+import PlayerCompo from './PlayerCompo.vue';
 import { Card, genCards, drawCard } from '../card';
+import { Player } from '../player';
 
 export default {
   name: 'WebHanabi',
@@ -58,7 +59,7 @@ export default {
     const thePlayer = ref(0);
     const playedCards: Card[][] = reactive([...Array(5)].map(() => []));
     const discardedCards: Card[] = reactive([]);
-    const players = reactive([...Array(4)].map((_, i) => new Player(cards, i !== 0)));
+    const players = reactive([...Array(4)].map((_, i) => new Player(cards, i !== 0, drawCard)));
     const selectedCard = ref(-1);
     const turn = ref(0);
     const tokens = ref(8);
@@ -69,10 +70,7 @@ export default {
     function tryNextMove(){
       const playerInTurn = players[turn.value];
       if(playerInTurn.auto){
-        setTimeout(() => {
-          // Dumb strategy to play from rightmost
-          playCard(playerInTurn, playerInTurn.cards.length-1, true);
-        }, 1000);
+        setTimeout(() => playerInTurn.think(playCard, discardCard), 1000);
       }
     }
 
