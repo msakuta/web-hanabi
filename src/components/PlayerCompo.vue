@@ -2,7 +2,7 @@
   <div :class="['frame', activeTurn ? 'activeFrame' : 'inactiveFrame']">
     {{activeTurn ? "* " : "  "}} Player {{idx}}:
     <label>
-      <input type="checkbox" @click="playerAutoClick">Auto
+      <input type="checkbox" :checked="player.auto" @click="playerAutoClick">Auto
     </label>
     <span style="position: relative; display: inline-block; left: 0; top: 0; width: 25em; height: 5em;">
       <span v-for="(card, cidx) in player.cards"
@@ -51,7 +51,8 @@ import { Card, drawCard } from '../card';
 export class Player {
   auto = false;
   cards: Card[];
-  constructor(cards: Card[]){
+  constructor(cards: Card[], auto = false){
+    this.auto = auto;
     this.cards = [...Array(4)].map(() => drawCard(cards, Math.floor(Math.random() * cards.length)));
   }
 }

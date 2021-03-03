@@ -58,7 +58,7 @@ export default {
     const thePlayer = ref(0);
     const playedCards: Card[][] = reactive([...Array(5)].map(() => []));
     const discardedCards: Card[] = reactive([]);
-    const players = reactive([...Array(4)].map(() => new Player(cards)));
+    const players = reactive([...Array(4)].map((_, i) => new Player(cards, i !== 0)));
     const selectedCard = ref(-1);
     const turn = ref(0);
     const tokens = ref(8);
