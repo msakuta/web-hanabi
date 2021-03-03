@@ -71,7 +71,7 @@ export default {
       if(playerInTurn.auto){
         setTimeout(() => {
           // Dumb strategy to play from rightmost
-          playCard(playerInTurn, playerInTurn.cards.length-1);
+          playCard(playerInTurn, playerInTurn.cards.length-1, true);
         }, 1000);
       }
     }
@@ -86,8 +86,8 @@ export default {
       selectedCard.value = cidx;
     }
 
-    function playCard(player: Player, cidx: number){
-      if(turn.value !== players.indexOf(player)){
+    function playCard(player: Player, cidx: number, autoPlay = false){
+      if(turn.value !== players.indexOf(player) || !autoPlay && player.auto){
         alert("Hey, it's not your turn!");
         return;
       }
@@ -112,8 +112,8 @@ export default {
       tryNextMove();
     }
 
-    function discardCard(player: Player, cidx: number){
-      if(turn.value !== players.indexOf(player)){
+    function discardCard(player: Player, cidx: number, autoPlay = false){
+      if(turn.value !== players.indexOf(player) || !autoPlay && player.auto){
         alert("Hey, it's not your turn!");
         return;
       }
@@ -130,7 +130,11 @@ export default {
       tryNextMove();
     }
 
-    function hintNumber(player: Player, number: number) {
+    function hintNumber(player: Player, number: number, autoPlay = false) {
+      if(!autoPlay && players[turn.value].auto){
+        alert("Hey, it's not your turn!");
+        return;
+      }
       if(players.indexOf(player) === thePlayer.value){
         alert("You can't hint yourself!");
         return;
@@ -147,7 +151,11 @@ export default {
       tryNextMove();
     }
 
-    function hintColor(player: Player, color: number) {
+    function hintColor(player: Player, color: number, autoPlay = false) {
+      if(!autoPlay && players[turn.value].auto){
+        alert("Hey, it's not your turn!");
+        return;
+      }
       if(players.indexOf(player) === thePlayer.value){
         alert("You can't hint yourself!");
         return;
