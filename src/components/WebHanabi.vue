@@ -47,7 +47,6 @@ import { ref, reactive } from 'vue';
 import PlayerCompo, { Player } from './PlayerCompo.vue';
 import { Card, genCards, drawCard } from '../card';
 
-
 export default {
   name: 'WebHanabi',
   components: {
@@ -66,6 +65,16 @@ export default {
     const strikes = ref(0);
     const debugMode = ref(false);
     console.log(playedCards)
+
+    function tryNextMove(){
+      const playerInTurn = players[turn.value];
+      if(playerInTurn.auto){
+        setTimeout(() => {
+          // Dumb strategy to play from rightmost
+          playCard(playerInTurn, playerInTurn.cards.length-1);
+        }, 1000);
+      }
+    }
 
     function playerCardClick(player: Player, cidx: number){
       if(turn.value !== players.indexOf(player)){
@@ -100,10 +109,11 @@ export default {
       player.cards.push(drawCard(cards, Math.floor(Math.random() * cards.length)));
       turn.value = (turn.value + 1) % players.length;
       selectedCard.value = -1;
+      tryNextMove();
     }
 
     function discardCard(player: Player, cidx: number){
-     if(turn.value !== players.indexOf(player)){
+      if(turn.value !== players.indexOf(player)){
         alert("Hey, it's not your turn!");
         return;
       }
@@ -117,6 +127,7 @@ export default {
       player.cards.push(drawCard(cards, Math.floor(Math.random() * cards.length)));
       turn.value = (turn.value + 1) % players.length;
       tokens.value = Math.min(8, tokens.value + 1);
+      tryNextMove();
     }
 
     function hintNumber(player: Player, number: number) {
@@ -133,6 +144,7 @@ export default {
       }
       tokens.value--;
       turn.value = (turn.value + 1) % players.length;
+      tryNextMove();
     }
 
     function hintColor(player: Player, color: number) {
@@ -149,6 +161,7 @@ export default {
       }
       tokens.value--;
       turn.value = (turn.value + 1) % players.length;
+      tryNextMove();
     }
 
     return {
