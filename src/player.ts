@@ -43,16 +43,22 @@ export class Player {
   }
 
   hintNumber(number: number, turn: number){
+    const affected = [];
     for(let i = 0; i < this.cards.length; i++){
-      this.cards[i].hintNumber(number);
+      if(this.cards[i].hintNumber(number))
+        affected.push(i);
     }
     this.lastHintedNumber = { number, turn };
+    return affected;
   }
 
   hintColor(color: number, turn: number){
     turn;
+    const affected = [];
     for(let i = 0; i < this.cards.length; i++){
-      this.cards[i].hintColor(color);
+      if(this.cards[i].hintColor(color))
+        affected.push(i);
     }
+    return affected;
   }
 }

@@ -37,24 +37,28 @@ export class Card {
     }
   }
 
+  /// Returns whether the hint affected the possibility of the card
   hintNumber(number: number) {
     if(this.number === number){
       for(let j = 0; j < this.possibleNumbers.length; j++){
         if(j !== number)
           this.possibleNumbers[j] = false;
       }
-      return;
+      return true;
     }
+    return false;
   }
 
+  /// Returns whether the hint affected the possibility of the card
   hintColor(color: number) {
     if(this.color === color){
       for(let j = 0; j < this.possibleColors.length; j++){
         if(j !== color)
           this.possibleColors[j] = false;
       }
-      return;
+      return true;
     }
+    return false;
   }
 }
 
@@ -74,4 +78,15 @@ export function drawCard(cards: Card[], index: number) {
   if(index === undefined)
     index = cards.length - 1;
   return cards.splice(index, 1)[0];
+}
+
+export function cardLetter(index: number) {
+  return String.fromCharCode('A'.charCodeAt(0) + index);
+}
+
+export function formatCardLetters(indices: number[]) {
+  return indices.length === 0 ? "none are" :
+        indices.length === 1 ? cardLetter(indices[0]) + " is" :
+        indices.reduce((s, c, i) => (i === indices.length - 1 ? s + " and " :
+          0 < i ? s + ", " : "") + cardLetter(c), "") + " are";
 }

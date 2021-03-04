@@ -52,7 +52,7 @@
 <script lang="ts">
 import { ref, reactive, computed } from 'vue';
 import PlayerCompo from './PlayerCompo.vue';
-import { Card, genCards, drawCard } from '../card';
+import { Card, genCards, drawCard, cardLetter, formatCardLetters } from '../card';
 import { Player } from '../player';
 
 export default {
@@ -134,7 +134,7 @@ export default {
       player.cards.push(drawCard(cards, Math.floor(Math.random() * cards.length)));
       globalTurn.value++;
       selectedCard.value = -1;
-      history.unshift(`${playerName(player)} played ${card.toString()} and it was ${
+      history.unshift(`${playerName(player)} played ${cardLetter(cidx)} which is ${card.toString()} and it was ${
         striked ? "a strike" : "ok"}`);
       if(gameOver.value){
         history.unshift(`The game is over! Your score was ${
@@ -162,7 +162,7 @@ export default {
       player.cards.push(drawCard(cards, Math.floor(Math.random() * cards.length)));
       globalTurn.value++;
       tokens.value = Math.min(8, tokens.value + 1);
-      history.unshift(`${playerName(player)} discarded ${card.toString()}`);
+      history.unshift(`${playerName(player)} discarded ${cardLetter(cidx)} which is ${card.toString()}`);
       tryNextMove();
     }
 
@@ -183,9 +183,11 @@ export default {
         alert("You used up all tokens!");
         return;
       }
-      player.hintNumber(number, globalTurn.value);
+      const affected = player.hintNumber(number, globalTurn.value);
       tokens.value--;
-      history.unshift(`${playerName(players[turn.value])} hinted ${playerName(player)} about number ${number+1}`);
+      history.unshift(`${playerName(players[turn.value])} hinted ${playerName(player)} about ${
+        formatCardLetters(affected)
+      } number ${number+1}`);
       globalTurn.value++;
       tryNextMove();
     }
@@ -207,9 +209,11 @@ export default {
         alert("You used up all tokens!");
         return;
       }
-      player.hintColor(color, globalTurn.value);
+      const affected = player.hintColor(color, globalTurn.value);
       tokens.value--;
-      history.unshift(`${playerName(players[turn.value])} hinted ${playerName(player)} about color ${Card.prototype.getColor(color)}`);
+      history.unshift(`${playerName(players[turn.value])} hinted ${playerName(player)} about ${
+        formatCardLetters(affected)
+      } color ${Card.prototype.getColor(color)}`);
       globalTurn.value++;
       tryNextMove();
     }

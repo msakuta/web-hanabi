@@ -15,6 +15,9 @@
         :style="`left: ${cidx * 5}em;`"
         @click="playerCardClick(cidx)">
         <div style="font-size: +2; font-weight: bold;">
+          <span class="cardLetter">
+            {{cardLetter(cidx)}}: 
+          </span>
           {{isThisPlayer ? "??" : card.toString()}}
         </div>
         <span v-for="j in Array(5).fill().map((_, i)=>i)"
@@ -54,7 +57,7 @@
 
 <script lang="ts">
 import { SetupContext } from 'vue';
-import { Card } from '../card';
+import { Card, cardLetter } from '../card';
 import { Player } from '../player';
 
 type Props = {
@@ -84,6 +87,7 @@ export default {
       getColor: (i: number) => Card.prototype.getColor(i),
       hintNumber: (idx: number) => context.emit("hintNumber", idx),
       hintColor: (idx: number) => context.emit("hintColor", idx),
+      cardLetter,
     }
   },
 }
@@ -157,5 +161,8 @@ export default {
 }
 .notPossible {
   color: #1c1e2f
+}
+.cardLetter {
+  color: #7b9cbc
 }
 </style>
