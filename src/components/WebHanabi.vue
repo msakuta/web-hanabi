@@ -69,7 +69,8 @@ export default {
     const discardedCards: Card[] = reactive([]);
     const players = reactive([...Array(4)].map((_, i) => new Player(cards, i !== 0, drawCard)));
     const selectedCard = ref(-1);
-    const turn = ref(0);
+    const globalTurn = ref(0);
+    const turn = computed(() => globalTurn.value % players.length);
     const tokens = ref(8);
     const strikes = ref(0);
     const debugMode = ref(false);
@@ -89,7 +90,7 @@ export default {
     function tryNextMove(){
       const playerInTurn = players[turn.value];
       if(playerInTurn.auto && !gameOver.value){
-        setTimeout(() => playerInTurn.think(players, playCard, discardCard, hintNumber), 1000);
+        setTimeout(() => playerInTurn.think(players, globalTurn.value, playCard, discardCard, hintNumber), 1000);
       }
     }
 
@@ -131,7 +132,7 @@ export default {
         playedCards[card.color].push(card);
       }
       player.cards.push(drawCard(cards, Math.floor(Math.random() * cards.length)));
-      turn.value = (turn.value + 1) % players.length;
+      globalTurn.value++;
       selectedCard.value = -1;
       history.unshift(`${playerName(player)} played ${card.toString()} and it was ${
         striked ? "a strike" : "ok"}`);
@@ -159,7 +160,7 @@ export default {
       player.cards.splice(cidx, 1);
       discardedCards.push(card);
       player.cards.push(drawCard(cards, Math.floor(Math.random() * cards.length)));
-      turn.value = (turn.value + 1) % players.length;
+      globalTurn.value++;
       tokens.value = Math.min(8, tokens.value + 1);
       history.unshift(`${playerName(player)} discarded ${card.toString()}`);
       tryNextMove();
@@ -182,12 +183,10 @@ export default {
         alert("You used up all tokens!");
         return;
       }
-      for(let i = 0; i < player.cards.length; i++){
-        player.cards[i].hintNumber(number);
-      }
+      player.hintNumber(number, globalTurn.value);
       tokens.value--;
       history.unshift(`${playerName(players[turn.value])} hinted ${playerName(player)} about number ${number+1}`);
-      turn.value = (turn.value + 1) % players.length;
+      globalTurn.value++;
       tryNextMove();
     }
 
@@ -208,12 +207,10 @@ export default {
         alert("You used up all tokens!");
         return;
       }
-      for(let i = 0; i < player.cards.length; i++){
-        player.cards[i].hintColor(color);
-      }
+      player.hintColor(color, globalTurn.value);
       tokens.value--;
       history.unshift(`${playerName(players[turn.value])} hinted ${playerName(player)} about color ${Card.prototype.getColor(color)}`);
-      turn.value = (turn.value + 1) % players.length;
+      globalTurn.value++;
       tryNextMove();
     }
 
