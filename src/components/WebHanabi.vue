@@ -20,6 +20,13 @@
       {{card.toString()}}
     </span>
   </div>
+  <div class="history">
+    <ul>
+      <template v-for="item in history" :key="item">
+        <li>{{item}}</li>
+      </template>
+    </ul>
+  </div>
   <div>
     Tokens: {{tokens}}
   </div>
@@ -55,6 +62,7 @@ export default {
   },
 
   setup(){
+    const history = reactive([] as string[]);
     const cards = genCards();
     const thePlayer = ref(0);
     const playedCards: Card[][] = reactive([...Array(5)].map(() => []));
@@ -95,11 +103,14 @@ export default {
       }
       const card = player.cards[cidx];
       player.cards.splice(cidx, 1);
+      let striked = false;
       if(playedCards[card.color].length === 0 && card.number !== 0){
         strikes.value++;
+        striked = true;
       }
       else if(0 < playedCards[card.color].length && card.number !== playedCards[card.color][playedCards[card.color].length-1].number + 1){
         strikes.value++;
+        striked = true;
       }
       else{
         playedCards[card.color].push(card);
@@ -107,6 +118,8 @@ export default {
       player.cards.push(drawCard(cards, Math.floor(Math.random() * cards.length)));
       turn.value = (turn.value + 1) % players.length;
       selectedCard.value = -1;
+      history.unshift(`Player ${players.indexOf(player)} played ${card.toString()} and it was ${
+        striked ? "a strike" : "ok"}`);
       tryNextMove();
     }
 
@@ -125,6 +138,7 @@ export default {
       player.cards.push(drawCard(cards, Math.floor(Math.random() * cards.length)));
       turn.value = (turn.value + 1) % players.length;
       tokens.value = Math.min(8, tokens.value + 1);
+      history.unshift(`Player ${players.indexOf(player)} discarded ${card.toString()}`);
       tryNextMove();
     }
 
@@ -145,6 +159,7 @@ export default {
         player.cards[i].hintNumber(number);
       }
       tokens.value--;
+      history.unshift(`Player ${turn.value} hinted Player ${players.indexOf(player)} about number ${number+1}`);
       turn.value = (turn.value + 1) % players.length;
       tryNextMove();
     }
@@ -166,11 +181,13 @@ export default {
         player.cards[i].hintColor(color);
       }
       tokens.value--;
+      history.unshift(`Player ${turn.value} hinted Player ${players.indexOf(player)} about color ${Card.prototype.getColor(color)}`);
       turn.value = (turn.value + 1) % players.length;
       tryNextMove();
     }
 
     return {
+      history,
       thePlayer,
       players,
       selectedCard,
@@ -197,15 +214,19 @@ h3 {
   margin: 40px 0 0;
 }
 ul {
-  list-style-type: none;
-  padding: 0;
+  margin: 2px;
 }
 li {
-  display: inline-block;
-  margin: 0 10px;
+  text-align: justify;
 }
 a {
   color: #42b983;
+}
+.history {
+  border: solid 1px #003f3f;
+  position: relative;
+  height: 6em;
+  overflow-y: scroll;
 }
 .card {
   line-height: 3em;
