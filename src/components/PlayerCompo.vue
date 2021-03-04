@@ -22,14 +22,14 @@
         </div>
         <span v-for="j in Array(5).fill().map((_, i)=>i)"
           :key="j"
-          :class="card.possibleNumbers[j] ? '' : 'notPossible'"
+          :class="['small', card.possibleNumbers[j] ? '' : 'notPossible']"
           :style="`left: ${j * 5 + 1}px;`">
           {{j + 1}}
         </span>
         <br>
         <span v-for="j in Array(5).fill().map((_, i)=>i)"
           :key="j"
-          :class="card.possibleColors[j] ? '' : 'notPossible'"
+          :class="['small', card.possibleColors[j] ? '' : 'notPossible']"
           :style="`left: ${j * 5 + 1}px;`">
           {{getColor(j)}}
         </span>
@@ -158,6 +158,9 @@ export default {
 .inactiveFrame {
   border: solid 1px #1f2f2f;
   background-color: #001f1f;
+}
+.small {
+  font-size: 80%;
 }
 .notPossible {
   color: #1c1e2f
