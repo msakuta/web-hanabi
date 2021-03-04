@@ -73,7 +73,16 @@ export default {
     const tokens = ref(8);
     const strikes = ref(0);
     const debugMode = ref(false);
-    console.log(playedCards)
+
+    function playerName(player: Player){
+      const id = players.indexOf(player);
+      if(id === thePlayer.value){
+        return "You";
+      }
+      else{
+        return `Player ${id}`;
+      }
+    }
 
     function tryNextMove(){
       const playerInTurn = players[turn.value];
@@ -118,7 +127,7 @@ export default {
       player.cards.push(drawCard(cards, Math.floor(Math.random() * cards.length)));
       turn.value = (turn.value + 1) % players.length;
       selectedCard.value = -1;
-      history.unshift(`Player ${players.indexOf(player)} played ${card.toString()} and it was ${
+      history.unshift(`${playerName(player)} played ${card.toString()} and it was ${
         striked ? "a strike" : "ok"}`);
       tryNextMove();
     }
@@ -138,7 +147,7 @@ export default {
       player.cards.push(drawCard(cards, Math.floor(Math.random() * cards.length)));
       turn.value = (turn.value + 1) % players.length;
       tokens.value = Math.min(8, tokens.value + 1);
-      history.unshift(`Player ${players.indexOf(player)} discarded ${card.toString()}`);
+      history.unshift(`${playerName(player)} discarded ${card.toString()}`);
       tryNextMove();
     }
 
@@ -159,7 +168,7 @@ export default {
         player.cards[i].hintNumber(number);
       }
       tokens.value--;
-      history.unshift(`Player ${turn.value} hinted Player ${players.indexOf(player)} about number ${number+1}`);
+      history.unshift(`${playerName(players[turn.value])} hinted ${playerName(player)} about number ${number+1}`);
       turn.value = (turn.value + 1) % players.length;
       tryNextMove();
     }
@@ -181,7 +190,7 @@ export default {
         player.cards[i].hintColor(color);
       }
       tokens.value--;
-      history.unshift(`Player ${turn.value} hinted Player ${players.indexOf(player)} about color ${Card.prototype.getColor(color)}`);
+      history.unshift(`${playerName(players[turn.value])} hinted ${playerName(player)} about color ${Card.prototype.getColor(color)}`);
       turn.value = (turn.value + 1) % players.length;
       tryNextMove();
     }
