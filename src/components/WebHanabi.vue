@@ -38,7 +38,7 @@
     :idx="idx"
     :player="player"
     :isThisPlayer="!debugMode && thePlayer === idx"
-    :activeTurn="turn === idx"
+    :activeTurn="!gameOver && turn === idx"
     :selectedCard="selectedCard"
     @playerAutoClick="player.auto = !player.auto"
     @playerCardClick="(cidx) => playerCardClick(player, cidx)"
@@ -50,7 +50,7 @@
 </template>
 
 <script lang="ts">
-import { ref, reactive } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import PlayerCompo from './PlayerCompo.vue';
 import { Card, genCards, drawCard } from '../card';
 import { Player } from '../player';
@@ -73,6 +73,8 @@ export default {
     const tokens = ref(8);
     const strikes = ref(0);
     const debugMode = ref(false);
+    const gameOver = computed(() => 3 <= strikes.value || playedCards.reduce(
+      (pre: boolean, cur: Card[]) => pre && 0 < cur.length && cur[cur.length-1].number === 4, true));
 
     function playerName(player: Player){
       const id = players.indexOf(player);
@@ -86,7 +88,7 @@ export default {
 
     function tryNextMove(){
       const playerInTurn = players[turn.value];
-      if(playerInTurn.auto){
+      if(playerInTurn.auto && !gameOver.value){
         setTimeout(() => playerInTurn.think(players, playCard, discardCard, hintNumber), 1000);
       }
     }
@@ -102,6 +104,10 @@ export default {
     }
 
     function playCard(player: Player, cidx: number, autoPlay = false){
+      if(gameOver.value){
+        alert("The game is over.");
+        return;
+      }
       if(turn.value !== players.indexOf(player) || !autoPlay && player.auto){
         alert("Hey, it's not your turn!");
         return;
@@ -129,10 +135,18 @@ export default {
       selectedCard.value = -1;
       history.unshift(`${playerName(player)} played ${card.toString()} and it was ${
         striked ? "a strike" : "ok"}`);
+      if(gameOver.value){
+        history.unshift(`The game is over! Your score was ${
+          playedCards.reduce((pre, cur) => pre + cur.length, 0)}`);
+      }
       tryNextMove();
     }
 
     function discardCard(player: Player, cidx: number, autoPlay = false){
+      if(gameOver.value){
+        alert("The game is over.");
+        return;
+      }
       if(turn.value !== players.indexOf(player) || !autoPlay && player.auto){
         alert("Hey, it's not your turn!");
         return;
@@ -152,6 +166,10 @@ export default {
     }
 
     function hintNumber(player: Player, number: number, autoPlay = false) {
+      if(gameOver.value){
+        alert("The game is over.");
+        return;
+      }
       if(!autoPlay && players[turn.value].auto){
         alert("Hey, it's not your turn!");
         return;
@@ -174,6 +192,10 @@ export default {
     }
 
     function hintColor(player: Player, color: number, autoPlay = false) {
+      if(gameOver.value){
+        alert("The game is over.");
+        return;
+      }
       if(!autoPlay && players[turn.value].auto){
         alert("Hey, it's not your turn!");
         return;
@@ -212,6 +234,7 @@ export default {
       hintNumber,
       hintColor,
       debugMode,
+      gameOver,
     }
   },
 }
