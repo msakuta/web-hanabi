@@ -50,14 +50,32 @@ export class Player {
       playCard(this, preferredCard, true);
     }
     else if(tokens !== 0){
+      const openNumbers = [...Array(5)].map((_, number) => number)
+        .filter(number => !!playedCards.find((cards: Card[]) =>
+          (number === 0 || cards[number - 1]) && !cards[number]));
+
       // Check others' cards to see if I can give a hint.
       for(const player of players){
         if(player === this)
           continue;
-        for(const card of player.cards){
-          // Hint unhinted 1 for another player
-          if(card.number === 0 && card.possibleNumbers === (1 << 5) - 1){
-            hintNumber(player, card.number, true);
+        // Hint unhinted open number for another player
+        for(const number of openNumbers){
+          let numPlayableCards = 0;
+          let numHintableCards = 0;
+          for(const card of player.cards){
+            if(card.number === number)
+              numHintableCards++;
+            if(card.number === number && card.possibleNumbers === (1 << 5) - 1 &&
+              playedCards.find((cards: Card[], color) =>
+                (number === 0 || cards[number - 1]) && !cards[number] && color === card.color))
+            {
+              numPlayableCards++;
+            }
+          }
+
+          // Give the hint only if all the hinted cards are okay to play
+          if(0 < numHintableCards && numPlayableCards === numHintableCards){
+            hintNumber(player, number, true);
             return;
           }
         }
