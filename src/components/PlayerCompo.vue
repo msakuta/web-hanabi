@@ -22,7 +22,7 @@
         </div>
         <span v-for="j in Array(5).fill().map((_, i)=>i)"
           :key="j"
-          :class="['small', card.possibleNumbers[j] ? '' : 'notPossible']"
+          :class="['small', card.possibleNumbers & (1 << j) ? '' : 'notPossible']"
           :style="`left: ${j * 5 + 1}px;`">
           {{j + 1}}
         </span>

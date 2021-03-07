@@ -32,8 +32,7 @@ export class Player {
           playedCards.find((cards: Card[]) =>
             (number === 0 || cards[number - 1]) && !cards[number]))
         {
-          return this.cards.findIndex(card => card.possibleNumbers[number] &&
-            card.possibleNumbers.reduce((p, c, i) => p && (i === number) ? c : !c, true));
+          return this.cards.findIndex(card => card.possibleNumbers === (1 << number));
         }
       }
       const hintedColor = this.lastHintedColor;
@@ -57,7 +56,7 @@ export class Player {
           continue;
         for(const card of player.cards){
           // Hint unhinted 1 for another player
-          if(card.number === 0 && card.possibleNumbers.reduce((p, c) => p && c, true)){
+          if(card.number === 0 && card.possibleNumbers === (1 << 5) - 1){
             hintNumber(player, card.number, true);
             return;
           }
