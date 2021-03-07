@@ -13,6 +13,12 @@ Then why would I reimplement it?
 Implementing a game by yourself improves the understanding of the game mechanics and
 hopefully we can implement an AI by ourselves, which is not possible with hanabi.cards.
 
+
+## AI development
+
+Currently you can play against AIs, but they are very, very stupid.
+Feel free to clone the repo and edit [src/player.ts](src/player.ts) to improve the AI.
+
 ## Project setup
 ```
 npm install

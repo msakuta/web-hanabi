@@ -1,9 +1,14 @@
 import { Card } from './card';
 
+function countIf<T>(arr: Array<T>, f: ((t: T) => boolean)): number {
+  return arr.reduce((accum, item) => accum + (f(item) ? 1 : 0), 0);
+}
+
 export class Player {
   auto = false;
   cards: Card[];
-  lastHintedNumber: { number: number; turn: number } | null = null;
+  lastHintedNumber?: { number: number; turn: number };
+  lastHintedColor?: { color: number; turn: number };
 
   constructor(cards: Card[], auto = false, drawCard: ((cards: Card[], cidx: number) => Card)){
     this.auto = auto;
@@ -16,9 +21,22 @@ export class Player {
     discardCard: ((p: Player, cidx: number, autoPlay: boolean) => void),
     hintNumber: ((p: Player, cidx: number, autoPlay: boolean) => void))
   {
-    const preferredCard = this.lastHintedNumber && this.lastHintedNumber.number === 0 && turn - players.length <= this.lastHintedNumber.turn ?
-      this.cards.findIndex(card => card.possibleNumbers[0] && card.possibleNumbers.slice(1).reduce((p, c) => !p && !c, true)) :
-      -1;
+    const preferredCard = (() => {
+      if(this.lastHintedNumber && this.lastHintedNumber.number === 0 &&
+        turn - players.length <= this.lastHintedNumber.turn)
+          return this.cards.findIndex(card => card.possibleNumbers[0] && card.possibleNumbers.slice(1).reduce((p, c) => !p && !c, true));
+      else{
+        const hintedColor = this.lastHintedColor;
+        if(hintedColor){
+          // If there was a hint for only one card in the last round, assume it was a suggestion to
+          // play it.
+          const hitColors = countIf(this.cards, card => card.color === hintedColor.color);
+          if(hitColors === 1 && turn - players.length <= hintedColor.turn)
+            return this.cards.findIndex(card => card.color === hintedColor.color);
+        }
+      }
+      return -1;
+    })();
     if(0 <= preferredCard){
       // Still very stupid strategy that if one is hinted, play that
       playCard(this, preferredCard, true);
@@ -59,6 +77,7 @@ export class Player {
       if(this.cards[i].hintColor(color))
         affected.push(i);
     }
+    this.lastHintedColor = { color, turn };
     return affected;
   }
 }
