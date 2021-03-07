@@ -16,24 +16,33 @@ export class Player {
   }
 
   think(players: Player[],
+    playedCards: Card[][],
     turn: number,
     playCard: ((p: Player, cidx: number, autoPlay: boolean) => void),
     discardCard: ((p: Player, cidx: number, autoPlay: boolean) => void),
     hintNumber: ((p: Player, cidx: number, autoPlay: boolean) => void))
   {
     const preferredCard = (() => {
-      if(this.lastHintedNumber && this.lastHintedNumber.number === 0 &&
-        turn - players.length <= this.lastHintedNumber.turn)
-          return this.cards.findIndex(card => card.possibleNumbers[0] && card.possibleNumbers.slice(1).reduce((p, c) => !p && !c, true));
-      else{
-        const hintedColor = this.lastHintedColor;
-        if(hintedColor){
-          // If there was a hint for only one card in the last round, assume it was a suggestion to
-          // play it.
-          const hitColors = countIf(this.cards, card => card.color === hintedColor.color);
-          if(hitColors === 1 && turn - players.length <= hintedColor.turn)
-            return this.cards.findIndex(card => card.color === hintedColor.color);
+      const hintedNumber = this.lastHintedNumber;
+      if(hintedNumber){
+        // If there was a hint for a number in the last round and there is open place to put a card,
+        // assume it was a suggestion to play it.
+        const number = hintedNumber.number;
+        if(turn - players.length <= hintedNumber.turn &&
+          playedCards.find((cards: Card[]) =>
+            (number === 0 || cards[number - 1]) && !cards[number]))
+        {
+          return this.cards.findIndex(card => card.possibleNumbers[number] &&
+            card.possibleNumbers.reduce((p, c, i) => p && (i === number) ? c : !c, true));
         }
+      }
+      const hintedColor = this.lastHintedColor;
+      if(hintedColor){
+        // If there was a hint for only one card in the last round, assume it was a suggestion to
+        // play it.
+        const hitColors = countIf(this.cards, card => card.color === hintedColor.color);
+        if(hitColors === 1 && turn - players.length <= hintedColor.turn)
+          return this.cards.findIndex(card => card.color === hintedColor.color);
       }
       return -1;
     })();

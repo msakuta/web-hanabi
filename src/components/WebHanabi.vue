@@ -90,7 +90,8 @@ export default {
     function tryNextMove(){
       const playerInTurn = players[turn.value];
       if(playerInTurn.auto && !gameOver.value){
-        setTimeout(() => playerInTurn.think(players, globalTurn.value, playCard, discardCard, hintNumber), 1000);
+        setTimeout(() => playerInTurn.think(players, playedCards,
+          globalTurn.value, playCard, discardCard, hintNumber), 1000);
       }
     }
 
