@@ -2,14 +2,17 @@
   <label>
     <input type="checkbox" v-model="debugMode">Debug mode
   </label>
-  <div v-if="debugMode">
-    Remaining cards:
-    <span v-for="(card, cidx) in cards" :key="cidx" :class="['card', card.getClass()]">
-      {{card.toString()}}
-    </span>
+  <div>
+    Remaining cards ({{cards.length}})
+    <template v-if="debugMode">
+      :
+      <span v-for="(card, cidx) in cards" :key="cidx" :class="['card', card.getClass()]">
+        {{card.toString()}}
+      </span>
+    </template>
   </div>
   <div>
-    Played cards:
+    Played cards ({{playedCards.reduce((count, cards) => count + cards.length, 0)}}/25):
     <span v-for="(cards, cidx) in playedCards" :key="cidx" :class="['card', cards.length ? cards[cards.length-1].getClass() : '']">
       {{cards.length ? cards[cards.length-1].toString() : ''}}
     </span>
