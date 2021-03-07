@@ -65,7 +65,7 @@ export class Player {
           for(const card of player.cards){
             if(card.number === number)
               numHintableCards++;
-            if(card.number === number && card.possibleNumbers === (1 << 5) - 1 &&
+            if(card.number === number && card.possibleNumbers !== (1 << number) &&
               playedCards.find((cards: Card[], color) =>
                 (number === 0 || cards[number - 1]) && !cards[number] && color === card.color))
             {

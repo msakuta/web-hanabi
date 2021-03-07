@@ -43,6 +43,10 @@ export class Card {
       this.possibleNumbers &= 1 << number;
       return true;
     }
+    else{
+      this.possibleNumbers &= ~(1 << number) & 0x1f;
+      return true;
+    }
     return false;
   }
 
@@ -50,6 +54,10 @@ export class Card {
   hintColor(color: number) {
     if(this.color === color){
       this.possibleColors &= 1 << color;
+      return true;
+    }
+    else{
+      this.possibleColors &= ~(1 << color) & 0x1f;
       return true;
     }
     return false;
