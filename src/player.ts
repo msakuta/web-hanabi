@@ -17,6 +17,7 @@ export class Player {
 
   think(players: Player[],
     playedCards: Card[][],
+    tokens: number,
     turn: number,
     playCard: ((p: Player, cidx: number, autoPlay: boolean) => void),
     discardCard: ((p: Player, cidx: number, autoPlay: boolean) => void),
@@ -46,10 +47,9 @@ export class Player {
       return -1;
     })();
     if(0 <= preferredCard){
-      // Still very stupid strategy that if one is hinted, play that
       playCard(this, preferredCard, true);
     }
-    else{
+    else if(tokens !== 0){
       // Check others' cards to see if I can give a hint.
       for(const player of players){
         if(player === this)
