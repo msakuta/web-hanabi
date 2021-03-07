@@ -45,9 +45,8 @@ export class Card {
     }
     else{
       this.possibleNumbers &= ~(1 << number) & 0x1f;
-      return true;
+      return false;
     }
-    return false;
   }
 
   /// Returns whether the hint affected the possibility of the card
@@ -58,9 +57,8 @@ export class Card {
     }
     else{
       this.possibleColors &= ~(1 << color) & 0x1f;
-      return true;
+      return false;
     }
-    return false;
   }
 }
 
