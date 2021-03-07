@@ -137,6 +137,9 @@ export default {
       else{
         playedCards[card.color].push(card);
       }
+      if(striked)
+        discardedCards.push(card);
+
       const drawnCard = drawCard(cards, Math.floor(Math.random() * cards.length));
       if(drawnCard)
         player.cards.push(drawnCard);
