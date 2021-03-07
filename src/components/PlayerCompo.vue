@@ -98,7 +98,7 @@ export default {
   line-height: 1.2em;
   position: absolute;
   left: 0;
-  width: 3em;
+  width: 3.5em;
   padding: 4px;
   margin: 4px;
   font-family: 'Courier New', Courier, monospace;
