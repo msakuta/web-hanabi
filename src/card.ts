@@ -2,7 +2,7 @@ export class Card {
   number = 1;
   color = 1;
   possibleNumbers = (1 << 5) - 1; // Bitfield [0, 32)
-  possibleColors = Array<boolean>(5).fill(true);
+  possibleColors = (1 << 5) - 1; // Bitfield [0, 32)
   constructor(number: number, color: number) {
     this.number = number;
     this.color = color;
@@ -49,10 +49,7 @@ export class Card {
   /// Returns whether the hint affected the possibility of the card
   hintColor(color: number) {
     if(this.color === color){
-      for(let j = 0; j < this.possibleColors.length; j++){
-        if(j !== color)
-          this.possibleColors[j] = false;
-      }
+      this.possibleColors &= 1 << color;
       return true;
     }
     return false;

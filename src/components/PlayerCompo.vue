@@ -29,7 +29,7 @@
         <br>
         <span v-for="j in Array(5).fill().map((_, i)=>i)"
           :key="j"
-          :class="['small', card.possibleColors[j] ? '' : 'notPossible']"
+          :class="['small', card.possibleColors & (1 << j) ? '' : 'notPossible']"
           :style="`left: ${j * 5 + 1}px;`">
           {{getColor(j)}}
         </span>
