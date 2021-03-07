@@ -70,12 +70,14 @@ export default {
     const players = reactive([...Array(4)].map((_, i) => new Player(cards, i !== 0, drawCard)));
     const selectedCard = ref(-1);
     const globalTurn = ref(0);
+    const lastRoundBegin = ref(-1);
     const turn = computed(() => globalTurn.value % players.length);
     const tokens = ref(8);
     const strikes = ref(0);
     const debugMode = ref(false);
     const gameOver = computed(() => 3 <= strikes.value || playedCards.reduce(
-      (pre: boolean, cur: Card[]) => pre && 0 < cur.length && cur[cur.length-1].number === 4, true));
+      (pre: boolean, cur: Card[]) => pre && 0 < cur.length && cur[cur.length-1].number === 4, true) ||
+      0 <= lastRoundBegin.value && turn.value <= lastRoundBegin.value + players.length);
 
     function playerName(player: Player){
       const id = players.indexOf(player);
@@ -132,7 +134,11 @@ export default {
       else{
         playedCards[card.color].push(card);
       }
-      player.cards.push(drawCard(cards, Math.floor(Math.random() * cards.length)));
+      const drawnCard = drawCard(cards, Math.floor(Math.random() * cards.length));
+      if(drawnCard)
+        player.cards.push(drawnCard);
+      else
+        lastRoundBegin.value = turn.value;
       globalTurn.value++;
       selectedCard.value = -1;
       history.unshift(`${playerName(player)} played ${cardLetter(cidx)} which is ${card.toString()} and it was ${
@@ -160,7 +166,11 @@ export default {
       const card = player.cards[cidx];
       player.cards.splice(cidx, 1);
       discardedCards.push(card);
-      player.cards.push(drawCard(cards, Math.floor(Math.random() * cards.length)));
+      const drawnCard = drawCard(cards, Math.floor(Math.random() * cards.length));
+      if(drawnCard)
+        player.cards.push(drawnCard);
+      else
+        lastRoundBegin.value = turn.value;
       globalTurn.value++;
       tokens.value = Math.min(8, tokens.value + 1);
       history.unshift(`${playerName(player)} discarded ${cardLetter(cidx)} which is ${card.toString()}`);
