@@ -46,7 +46,7 @@ export class GameState {
 
   newSession(){
     this.sessionId = generateSessionId();
-    updateSession(this.sessionId, this.fieldCards, this.players);
+    this.updateSession();
   }
 
   applySession(value?: SessionData | null) {
@@ -72,10 +72,17 @@ export class GameState {
           this.players[firstNonPlayer].name = this.userName;
           this.players[firstNonPlayer].playerId = userId;
           this.players[firstNonPlayer].auto = false;
-          updateSession(this.sessionId, this.fieldCards, this.players);
+          this.updateSession();
         }
       }
     }
+  }
+
+  updateSession(){
+    db.collection("/sessions").doc(this.sessionId).update({
+        fieldCards: this.fieldCards.map(card => card.toString()),
+        players: this.players.map(player => player.serialize()),
+    });
   }
 }
 
@@ -92,13 +99,6 @@ export function generateSessionId(){
     // At this point the sessionId in users should be initialized.
     db.collection("/sessions").doc(sessionId).set({hello: "world"});
     return sessionId;
-}
-
-export function updateSession(sessionId: string, fieldCards: Card[], players: Player[]){
-    db.collection("/sessions").doc(sessionId).update({
-        fieldCards: fieldCards.map(card => card.toString()),
-        players: players.map(player => player.serialize()),
-    });
 }
 
 export function deserializeSession(doc?: firebase.firestore.DocumentData): SessionData | null {

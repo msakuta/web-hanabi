@@ -70,7 +70,7 @@ import PlayerCompo from './PlayerCompo.vue';
 import { Card, drawCard, cardLetter, formatCardLetters } from '../card';
 import { Player } from '../player';
 import { userId, db } from '../main';
-import { updateSession, loadSession, saveSessionId, GameState } from '../session';
+import { loadSession, saveSessionId, GameState } from '../session';
 
 
 export default {
@@ -107,7 +107,7 @@ export default {
     }
 
     function tryNextMove(){
-      updateSession(gameState.sessionId, gameState.fieldCards, gameState.players);
+      gameState.updateSession();
       const playerInTurn = gameState.players[turn.value];
       if(playerInTurn.auto && !gameOver.value){
         setTimeout(() => playerInTurn.think(gameState.players, playedCards, tokens.value,
@@ -255,7 +255,7 @@ export default {
       db.collection("/users").doc(userId).set({name: gameState.userName});
       if(gameState.sessionId && 0 <= gameState.thePlayer){
         gameState.players[gameState.thePlayer].name = gameState.userName;
-        updateSession(gameState.sessionId, gameState.fieldCards, gameState.players);
+        gameState.updateSession();
       }
     }
 
