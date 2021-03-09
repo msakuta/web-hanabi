@@ -13,18 +13,23 @@ export type SessionData = {
 export class GameState {
   userName: string;
   sessionId: string;
-  fieldCards: Card[];
-  players: Player[];
-  thePlayer: number;
-  globalTurn: number;
+  fieldCards: Card[] = [];
+  players: Player[] = [];
+  thePlayer = 0;
+  globalTurn = 0;
 
   constructor(){
     this.userName = "";
     this.sessionId = loadSessionId();
+    this.resetGame();
+  }
+
+  resetGame() {
+    this.thePlayer = 0; // The resetter is always the host.
     this.fieldCards = genCards(),
     this.players = [...Array(4)].map((_, i) => new Player(i === this.thePlayer ? this.userName : `Player ${i}`,
       this.fieldCards, i !== 0, drawCard));
-    this.thePlayer = 0;
+    this.players[this.thePlayer].playerId = userId;
     this.globalTurn = 0;
   }
 
@@ -49,6 +54,7 @@ export class GameState {
 
   newSession(){
     this.sessionId = generateSessionId();
+    this.resetGame();
     this.updateSession();
   }
 
@@ -93,14 +99,14 @@ export class GameState {
   deserializeSession(doc?: firebase.firestore.DocumentData): SessionData | null {
     if(!doc)
       return null;
-    const fieldCards = doc.get("fieldCards") as string[] | null;
+    const fieldCards = doc.get("fieldCards") as string[] | undefined;
     if(!fieldCards)
       return null;
-    const players = doc.get("players") as any[] | null;
+    const players = doc.get("players") as any[] | undefined;
     if(!players)
       return null;
-    const globalTurn = doc.get("globalTurn") as number | null;
-    if(!globalTurn)
+    const globalTurn = doc.get("globalTurn") as number | undefined;
+    if(globalTurn === undefined)
       return null;
     return {
       fieldCards: fieldCards.map((data) => {
@@ -149,7 +155,7 @@ export function generateSessionId(){
         sessionId += Math.floor(Math.random() * 16).toString(16);
     localStorage.setItem('WebHanabiSessionId', sessionId);
     // At this point the sessionId in users should be initialized.
-    db.collection("/sessions").doc(sessionId).set({hello: "world"});
+    db.collection("/sessions").doc(sessionId).set({});
     return sessionId;
 }
 
