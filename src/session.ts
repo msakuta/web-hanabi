@@ -5,6 +5,7 @@ import { Player } from './player';
 import WebHanabi from './components/WebHanabi.vue';
 
 export type SessionData = {
+  history: string[];
   fieldCards: Card[];
   players: Player[];
   globalTurn: number;
@@ -13,6 +14,7 @@ export type SessionData = {
 export class GameState {
   userName: string;
   sessionId: string;
+  history: string[] = [];
   fieldCards: Card[] = [];
   players: Player[] = [];
   thePlayer = 0;
@@ -26,6 +28,7 @@ export class GameState {
 
   resetGame() {
     this.thePlayer = 0; // The resetter is always the host.
+    this.history = [];
     this.fieldCards = genCards(),
     this.players = [...Array(4)].map((_, i) => new Player(i === this.thePlayer ? this.userName : `Player ${i}`,
       this.fieldCards, i !== 0, drawCard));
@@ -90,14 +93,18 @@ export class GameState {
 
   updateSession(){
     db.collection("/sessions").doc(this.sessionId).update({
-        fieldCards: this.fieldCards.map(card => card.toString()),
-        players: this.players.map(player => player.serialize()),
-        globalTurn: this.globalTurn,
+      history: this.history,
+      fieldCards: this.fieldCards.map(card => card.toString()),
+      players: this.players.map(player => player.serialize()),
+      globalTurn: this.globalTurn,
     });
   }
 
   deserializeSession(doc?: firebase.firestore.DocumentData): SessionData | null {
     if(!doc)
+      return null;
+    const history = doc.get("history") as string[] | undefined;
+    if(history === undefined)
       return null;
     const fieldCards = doc.get("fieldCards") as string[] | undefined;
     if(!fieldCards)
@@ -108,7 +115,9 @@ export class GameState {
     const globalTurn = doc.get("globalTurn") as number | undefined;
     if(globalTurn === undefined)
       return null;
+    this.history = history;
     return {
+      history,
       fieldCards: fieldCards.map((data) => {
           const card = new Card;
           card.fromString(data);

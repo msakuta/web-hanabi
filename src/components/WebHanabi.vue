@@ -37,7 +37,7 @@
   </div>
   <div class="history">
     <ul>
-      <template v-for="item in history" :key="item">
+      <template v-for="item in gameState.history" :key="item">
         <li>{{item}}</li>
       </template>
     </ul>
@@ -80,7 +80,6 @@ export default {
   },
 
   setup(){
-    const history = reactive([] as string[]);
     const gameState = reactive(new GameState());
     gameState.init();
     const playedCards: Card[][] = reactive([...Array(5)].map(() => []));
@@ -162,10 +161,10 @@ export default {
         lastRoundBegin.value = turn.value;
       gameState.globalTurn++;
       selectedCard.value = -1;
-      history.unshift(`${playerName(player)} played ${cardLetter(cidx)} which is ${card.toString()} and it was ${
+      gameState.history.unshift(`${playerName(player)} played ${cardLetter(cidx)} which is ${card.toString()} and it was ${
         striked ? "a strike" : "ok"}`);
       if(gameOver.value){
-        history.unshift(`The game is over! Your score was ${
+        gameState.history.unshift(`The game is over! Your score was ${
           playedCards.reduce((pre, cur) => pre + cur.length, 0)}`);
       }
       tryNextMove();
@@ -194,7 +193,7 @@ export default {
         lastRoundBegin.value = turn.value;
       gameState.globalTurn++;
       tokens.value = Math.min(8, tokens.value + 1);
-      history.unshift(`${playerName(player)} discarded ${cardLetter(cidx)} which is ${card.toString()}`);
+      gameState.history.unshift(`${playerName(player)} discarded ${cardLetter(cidx)} which is ${card.toString()}`);
       tryNextMove();
     }
 
@@ -217,7 +216,7 @@ export default {
       }
       const affected = player.hintNumber(number, globalTurn.value);
       tokens.value--;
-      history.unshift(`${playerName(gameState.players[turn.value])} hinted ${playerName(player)} about ${
+      gameState.history.unshift(`${playerName(gameState.players[turn.value])} hinted ${playerName(player)} about ${
         formatCardLetters(affected)
       } number ${number+1}`);
       gameState.globalTurn++;
@@ -243,7 +242,7 @@ export default {
       }
       const affected = player.hintColor(color, gameState.globalTurn);
       tokens.value--;
-      history.unshift(`${playerName(gameState.players[turn.value])} hinted ${playerName(player)} about ${
+      gameState.history.unshift(`${playerName(gameState.players[turn.value])} hinted ${playerName(player)} about ${
         formatCardLetters(affected)
       } color ${Card.prototype.getColor(color)}`);
       gameState.globalTurn++;
@@ -259,7 +258,6 @@ export default {
     }
 
     return {
-      history,
       gameState,
       selectedCard,
       turn,
