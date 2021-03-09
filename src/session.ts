@@ -8,6 +8,7 @@ export class GameState {
   sessionId: string;
   history: string[] = [];
   fieldCards: Card[] = [];
+  discardedCards: Card[] = [];
   players: Player[] = [];
   thePlayer = 0;
   globalTurn = 0;
@@ -22,6 +23,7 @@ export class GameState {
     this.thePlayer = 0; // The resetter is always the host.
     this.history = [];
     this.fieldCards = genCards(),
+    this.discardedCards = [];
     this.players = [...Array(4)].map((_, i) => new Player(i === this.thePlayer ? this.userName : `Player ${i}`,
       this.fieldCards, i !== 0, drawCard));
     this.players[this.thePlayer].playerId = userId;
@@ -57,6 +59,7 @@ export class GameState {
     db.collection("/sessions").doc(this.sessionId).update({
       history: this.history,
       fieldCards: this.fieldCards.map(card => card.toString()),
+      discardedCards: this.discardedCards.map(card => card.toString()),
       players: this.players.map(player => player.serialize()),
       globalTurn: this.globalTurn,
     });
@@ -71,6 +74,9 @@ export class GameState {
     const fieldCards = doc.get("fieldCards") as string[] | undefined;
     if(!fieldCards)
       return null;
+    const discardedCards = doc.get("discardedCards") as string[] | undefined;
+    if(!discardedCards)
+      return null;
     const players = doc.get("players") as any[] | undefined;
     if(!players)
       return null;
@@ -80,6 +86,12 @@ export class GameState {
     this.history = history;
 
     this.fieldCards = fieldCards.map((data) => {
+      const card = new Card;
+      card.fromString(data);
+      return card;
+    });
+
+    this.discardedCards = discardedCards.map((data) => {
       const card = new Card;
       card.fromString(data);
       return card;

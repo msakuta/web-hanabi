@@ -31,7 +31,7 @@
   </div>
   <div>
     Discarded cards:
-    <span v-for="(card, cidx) in discardedCards" :key="cidx" :class="['card', card.getClass()]">
+    <span v-for="(card, cidx) in gameState.discardedCards" :key="cidx" :class="['card', card.getClass()]">
       {{card.toString()}}
     </span>
   </div>
@@ -83,7 +83,6 @@ export default {
     const gameState = reactive(new GameState());
     gameState.init();
     const playedCards: Card[][] = reactive([...Array(5)].map(() => []));
-    const discardedCards: Card[] = reactive([]);
     const selectedCard = ref(-1);
     const lastRoundBegin = ref(-1);
     const turn = computed(() => gameState.globalTurn % gameState.players.length);
@@ -152,7 +151,7 @@ export default {
         playedCards[card.color].push(card);
       }
       if(striked)
-        discardedCards.push(card);
+        gameState.discardedCards.push(card);
 
       const drawnCard = drawCard(gameState.fieldCards, Math.floor(Math.random() * gameState.fieldCards.length));
       if(drawnCard)
@@ -185,7 +184,7 @@ export default {
       }
       const card = player.cards[cidx];
       player.cards.splice(cidx, 1);
-      discardedCards.push(card);
+      gameState.discardedCards.push(card);
       const drawnCard = drawCard(gameState.fieldCards, Math.floor(Math.random() * gameState.fieldCards.length));
       if(drawnCard)
         player.cards.push(drawnCard);
@@ -264,7 +263,6 @@ export default {
       tokens,
       strikes,
       playedCards,
-      discardedCards,
       playerCardClick,
       playCard,
       discardCard,
