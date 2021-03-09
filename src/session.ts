@@ -24,7 +24,12 @@ export function updateSession(sessionId: string, fieldCards: Card[], players: Pl
     });
 }
 
-export async function loadSession(sessionId: string){
+export type SessionData = {
+    fieldCards: Card[];
+    players: Player[];
+}
+
+export async function loadSession(sessionId: string): Promise<SessionData | null> {
     const doc = await db.collection("/sessions").doc(sessionId).get();
     if(doc.exists){
         const fieldCards = doc.get("fieldCards") as string[];

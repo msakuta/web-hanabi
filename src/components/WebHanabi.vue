@@ -12,6 +12,7 @@
   <div>
     Session id: {{sessionId}}
     <button @click="newSession">New session</button>
+    <button @click="joinSession">Join session</button>
   </div>
   <div>
     Remaining cards ({{cards.length}})
@@ -69,7 +70,7 @@ import PlayerCompo from './PlayerCompo.vue';
 import { Card, genCards, drawCard, cardLetter, formatCardLetters } from '../card';
 import { Player } from '../player';
 import { userId, db, loadUserName } from '../main';
-import { generateSessionId, updateSession, loadSession, loadSessionId } from '../session';
+import { generateSessionId, updateSession, loadSession, loadSessionId, SessionData } from '../session';
 
 
 export default {
@@ -113,7 +114,7 @@ export default {
       userName.value = name
     });
 
-    loadSession(sessionId.value).then((value) => {
+    function applySession(value?: SessionData | null) {
       if(value){
         cards.length = 0;
         for(const card of value.fieldCards)
@@ -122,7 +123,9 @@ export default {
         for(const player of value.players)
           players.push(player);
       }
-    });
+    }
+
+    loadSession(sessionId.value).then(applySession);
 
     function tryNextMove(){
       updateSession(sessionId.value, cards, players);
@@ -277,6 +280,14 @@ export default {
       updateSession(sessionId.value, cards, players);
     }
 
+    async function joinSession(){
+      const newId = prompt("Enter session id");
+      if(!newId)
+        return;
+      const sessionData = await loadSession(newId);
+      applySession(sessionData);
+    }
+
     return {
       history,
       thePlayer,
@@ -300,6 +311,7 @@ export default {
       setUserName,
       sessionId,
       newSession,
+      joinSession,
     }
   },
 }
