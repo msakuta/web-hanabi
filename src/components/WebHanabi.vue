@@ -1,7 +1,14 @@
 <template>
-  <label>
-    <input type="checkbox" v-model="debugMode">Debug mode
-  </label>
+  <div>
+    <label>
+      <input type="checkbox" v-model="debugMode">Debug mode
+    </label>
+  </div>
+  <div>User Id: {{userId}}</div>
+  <div>
+    User Name: <input type="text" v-model="userName">
+    <button @click="setUserName">Set</button>
+  </div>
   <div>
     Remaining cards ({{cards.length}})
     <template v-if="debugMode">
@@ -57,6 +64,7 @@ import { ref, reactive, computed } from 'vue';
 import PlayerCompo from './PlayerCompo.vue';
 import { Card, genCards, drawCard, cardLetter, formatCardLetters } from '../card';
 import { Player } from '../player';
+import { userId, db } from '../main';
 
 export default {
   name: 'WebHanabi',
@@ -65,6 +73,7 @@ export default {
   },
 
   setup(){
+    const userName = ref("");
     const history = reactive([] as string[]);
     const cards = genCards();
     const thePlayer = ref(0);
@@ -235,6 +244,10 @@ export default {
       tryNextMove();
     }
 
+    function setUserName(){
+      db.collection("/users").doc(userId).set({name: userName.value});
+    }
+
     return {
       history,
       thePlayer,
@@ -253,6 +266,9 @@ export default {
       hintColor,
       debugMode,
       gameOver,
+      userId,
+      userName,
+      setUserName,
     }
   },
 }
