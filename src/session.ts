@@ -2,14 +2,6 @@ import firebase from 'firebase';
 import { db, userId, loadUserName } from './main';
 import { Card, genCards, drawCard } from './card';
 import { Player } from './player';
-import WebHanabi from './components/WebHanabi.vue';
-
-export type SessionData = {
-  history: string[];
-  fieldCards: Card[];
-  players: Player[];
-  globalTurn: number;
-}
 
 export class GameState {
   userName: string;
@@ -44,12 +36,12 @@ export class GameState {
       this.players[this.thePlayer].playerId = userId;
     });
 
-    this.loadSession(this.sessionId).then(value => this.applySession(value));
+    this.loadSession(this.sessionId).then(value => this.deserializeSession(value));
 
     db.collection('/sessions').doc(this.sessionId).onSnapshot({
       next: data => {
         if(data.exists){
-          this.applySession(this.deserializeSession(data));
+          this.deserializeSession(data);
         }
       }
     });
@@ -61,36 +53,6 @@ export class GameState {
     this.updateSession();
   }
 
-  applySession(value?: SessionData | null) {
-    if(value){
-      this.fieldCards.length = 0;
-      for(const card of value.fieldCards)
-        this.fieldCards.push(card);
-      this.thePlayer = -1;
-      this.players.length = 0;
-      let foundSelf = false;
-      for(let idx = 0; idx < value.players.length; idx++){
-        const player = value.players[idx];
-        this.players.push(player);
-        if(player.playerId === userId){
-          this.thePlayer = idx;
-          foundSelf = true;
-        }
-      }
-      this.globalTurn = value.globalTurn;
-
-      if(!foundSelf){
-        const firstNonPlayer = this.players.findIndex(player => !player.playerId);
-        if(0 <= firstNonPlayer){
-          this.players[firstNonPlayer].name = this.userName;
-          this.players[firstNonPlayer].playerId = userId;
-          this.players[firstNonPlayer].auto = false;
-          this.updateSession();
-        }
-      }
-    }
-  }
-
   updateSession(){
     db.collection("/sessions").doc(this.sessionId).update({
       history: this.history,
@@ -100,7 +62,7 @@ export class GameState {
     });
   }
 
-  deserializeSession(doc?: firebase.firestore.DocumentData): SessionData | null {
+  deserializeSession(doc?: firebase.firestore.DocumentData) {
     if(!doc)
       return null;
     const history = doc.get("history") as string[] | undefined;
@@ -116,30 +78,40 @@ export class GameState {
     if(globalTurn === undefined)
       return null;
     this.history = history;
-    return {
-      history,
-      fieldCards: fieldCards.map((data) => {
-          const card = new Card;
-          card.fromString(data);
-          return card;
-      }),
-      players: players.map(data => {
-          const player = new Player("", [], undefined);
-          player.deserialize(data);
-          return player;
-      }),
-      globalTurn,
-    };
+
+    this.fieldCards = fieldCards.map((data) => {
+      const card = new Card;
+      card.fromString(data);
+      return card;
+    });
+
+    this.thePlayer = -1;
+    let foundSelf = false;
+    this.players = players.map((data, idx) => {
+      const player = new Player("", [], undefined);
+      player.deserialize(data);
+      if(player.playerId === userId){
+        this.thePlayer = idx;
+        foundSelf = true;
+      }
+      return player;
+    });
+
+    this.globalTurn = globalTurn;
+
+    if(!foundSelf){
+      const firstNonPlayer = this.players.findIndex(player => !player.playerId);
+      if(0 <= firstNonPlayer){
+        this.players[firstNonPlayer].name = this.userName;
+        this.players[firstNonPlayer].playerId = userId;
+        this.players[firstNonPlayer].auto = false;
+        this.updateSession();
+      }
+    }
   }
   
-  async loadSession(sessionId: string): Promise<SessionData | null> {
-      const doc = await db.collection("/sessions").doc(sessionId).get();
-      if(doc.exists){
-          return this.deserializeSession(doc);
-      }
-      else{
-          return null;
-      }
+  async loadSession(sessionId: string) {
+    return await db.collection("/sessions").doc(sessionId).get();
   }
 
   async joinSession(){
@@ -147,7 +119,7 @@ export class GameState {
     if(!newId)
       return;
     const sessionData = await this.loadSession(newId);
-    this.applySession(sessionData);
+    this.deserializeSession(sessionData);
     this.sessionId = newId;
     saveSessionId(newId);
   }
