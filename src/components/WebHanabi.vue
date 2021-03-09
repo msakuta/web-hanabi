@@ -70,7 +70,7 @@ import PlayerCompo from './PlayerCompo.vue';
 import { Card, drawCard, cardLetter, formatCardLetters } from '../card';
 import { Player } from '../player';
 import { userId, db } from '../main';
-import { loadSession, saveSessionId, GameState } from '../session';
+import { GameState } from '../session';
 
 
 export default {
@@ -259,16 +259,6 @@ export default {
       }
     }
 
-    async function joinSession(){
-      const newId = prompt("Enter session id");
-      if(!newId)
-        return;
-      const sessionData = await loadSession(newId);
-      gameState.applySession(sessionData);
-      gameState.sessionId = newId;
-      saveSessionId(newId);
-    }
-
     return {
       history,
       gameState,
@@ -288,7 +278,7 @@ export default {
       userId,
       setUserName,
       newSession: () => gameState.newSession(),
-      joinSession,
+      joinSession: () => gameState.joinSession(),
     }
   },
 }

@@ -33,12 +33,12 @@ export class GameState {
       this.players[this.thePlayer].playerId = userId;
     });
 
-    loadSession(this.sessionId).then(value => this.applySession(value));
+    this.loadSession(this.sessionId).then(value => this.applySession(value));
 
     db.collection('/sessions').doc(this.sessionId).onSnapshot({
       next: data => {
         if(data.exists){
-          this.applySession(deserializeSession(data));
+          this.applySession(this.deserializeSession(data));
         }
       }
     });
@@ -84,6 +84,49 @@ export class GameState {
         players: this.players.map(player => player.serialize()),
     });
   }
+
+  deserializeSession(doc?: firebase.firestore.DocumentData): SessionData | null {
+    if(!doc)
+      return null;
+    const fieldCards = doc.get("fieldCards") as string[] | null;
+    if(!fieldCards)
+      return null;
+    const players = doc.get("players") as any[] | null;
+    if(!players)
+      return null;
+    return {
+      fieldCards: fieldCards.map((data) => {
+          const card = new Card;
+          card.fromString(data);
+          return card;
+      }),
+      players: players.map(data => {
+          const player = new Player("", [], undefined);
+          player.deserialize(data);
+          return player;
+      }),
+    };
+  }
+  
+  async loadSession(sessionId: string): Promise<SessionData | null> {
+      const doc = await db.collection("/sessions").doc(sessionId).get();
+      if(doc.exists){
+          return this.deserializeSession(doc);
+      }
+      else{
+          return null;
+      }
+  }
+
+  async joinSession(){
+    const newId = prompt("Enter session id");
+    if(!newId)
+      return;
+    const sessionData = await this.loadSession(newId);
+    this.applySession(sessionData);
+    this.sessionId = newId;
+    saveSessionId(newId);
+  }
 }
 
 // Sessions are supposed to be shared, so it's shorter than userId.
@@ -101,38 +144,6 @@ export function generateSessionId(){
     return sessionId;
 }
 
-export function deserializeSession(doc?: firebase.firestore.DocumentData): SessionData | null {
-  if(!doc)
-    return null;
-  const fieldCards = doc.get("fieldCards") as string[] | null;
-  if(!fieldCards)
-    return null;
-  const players = doc.get("players") as any[] | null;
-  if(!players)
-    return null;
-  return {
-    fieldCards: fieldCards.map((data) => {
-        const card = new Card;
-        card.fromString(data);
-        return card;
-    }),
-    players: players.map(data => {
-        const player = new Player("", [], undefined);
-        player.deserialize(data);
-        return player;
-    }),
-  };
-}
-
-export async function loadSession(sessionId: string): Promise<SessionData | null> {
-    const doc = await db.collection("/sessions").doc(sessionId).get();
-    if(doc.exists){
-        return deserializeSession(doc);
-    }
-    else{
-        return null;
-    }
-}
 
 export function loadSessionId(){
     const st = localStorage.getItem('WebHanabiSessionId');
