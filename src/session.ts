@@ -1,3 +1,4 @@
+import firebase from 'firebase';
 import { db } from './main';
 import { Card } from './card';
 import { Player } from './player';
@@ -29,22 +30,28 @@ export type SessionData = {
     players: Player[];
 }
 
+export function deserializeSession(doc?: firebase.firestore.DocumentData): SessionData | null {
+    if(!doc)
+        return null;
+    const fieldCards = doc.get("fieldCards") as string[];
+    const players = doc.get("players") as any[];
+    return { fieldCards: fieldCards.map((data) => {
+            const card = new Card;
+            card.fromString(data);
+            return card;
+        }),
+        players: players.map(data => {
+            const player = new Player("", [], undefined);
+            player.deserialize(data);
+            return player;
+        }),
+    };
+}
+
 export async function loadSession(sessionId: string): Promise<SessionData | null> {
     const doc = await db.collection("/sessions").doc(sessionId).get();
     if(doc.exists){
-        const fieldCards = doc.get("fieldCards") as string[];
-        const players = doc.get("players") as any[];
-        return { fieldCards: fieldCards.map((data) => {
-                const card = new Card;
-                card.fromString(data);
-                return card;
-            }),
-            players: players.map(data => {
-                const player = new Player("", [], undefined);
-                player.deserialize(data);
-                return player;
-            }),
-        };
+        return deserializeSession(doc);
     }
     else{
         return null;

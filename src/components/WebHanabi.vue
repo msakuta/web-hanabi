@@ -70,7 +70,8 @@ import PlayerCompo from './PlayerCompo.vue';
 import { Card, genCards, drawCard, cardLetter, formatCardLetters } from '../card';
 import { Player } from '../player';
 import { userId, db, loadUserName } from '../main';
-import { generateSessionId, updateSession, loadSession, loadSessionId, saveSessionId, SessionData } from '../session';
+import { generateSessionId, updateSession,
+  deserializeSession, loadSession, loadSessionId, saveSessionId, SessionData } from '../session';
 
 
 export default {
@@ -146,6 +147,14 @@ export default {
     }
 
     loadSession(sessionId.value).then(applySession);
+
+    db.collection('/sessions').doc(sessionId.value).onSnapshot({
+      next: data => {
+        if(data.exists){
+          applySession(deserializeSession(data));
+        }
+      }
+    });
 
     function tryNextMove(){
       updateSession(sessionId.value, cards, players);
@@ -293,6 +302,10 @@ export default {
 
     function setUserName(){
       db.collection("/users").doc(userId).set({name: userName.value});
+      if(sessionId.value && 0 <= thePlayer.value){
+        players[thePlayer.value].name = userName.value;
+        updateSession(sessionId.value, cards, players);
+      }
     }
 
     function newSession(){
