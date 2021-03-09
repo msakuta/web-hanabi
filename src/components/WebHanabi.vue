@@ -6,19 +6,19 @@
   </div>
   <div>User Id: {{userId}}</div>
   <div>
-    User Name: <input type="text" v-model="userName">
+    User Name: <input type="text" v-model="gameState.userName">
     <button @click="setUserName">Set</button>
   </div>
   <div>
-    Session id: {{sessionId}}
+    Session id: {{gameState.sessionId}}
     <button @click="newSession">New session</button>
     <button @click="joinSession">Join session</button>
   </div>
   <div>
-    Remaining cards ({{cards.length}})
+    Remaining cards ({{gameState.fieldCards.length}})
     <template v-if="debugMode">
       :
-      <span v-for="(card, cidx) in cards" :key="cidx" :class="['card', card.getClass()]">
+      <span v-for="(card, cidx) in gameState.fieldCards" :key="cidx" :class="['card', card.getClass()]">
         {{card.toString() + " "}}
       </span>
     </template>
@@ -48,11 +48,11 @@
   <div>
     Strikes: {{strikes}}
   </div>
-  <player-compo v-for="(player, idx) in players"
+  <player-compo v-for="(player, idx) in gameState.players"
     :key="idx"
     :idx="idx"
     :player="player"
-    :isThisPlayer="!debugMode && thePlayer === idx"
+    :isThisPlayer="!debugMode && gameState.thePlayer === idx"
     :activeTurn="!gameOver && turn === idx"
     :selectedCard="selectedCard"
     @playerAutoClick="player.auto = !player.auto"
@@ -67,11 +67,10 @@
 <script lang="ts">
 import { ref, reactive, computed } from 'vue';
 import PlayerCompo from './PlayerCompo.vue';
-import { Card, genCards, drawCard, cardLetter, formatCardLetters } from '../card';
+import { Card, drawCard, cardLetter, formatCardLetters } from '../card';
 import { Player } from '../player';
-import { userId, db, loadUserName } from '../main';
-import { generateSessionId, updateSession,
-  deserializeSession, loadSession, loadSessionId, saveSessionId, SessionData } from '../session';
+import { userId, db } from '../main';
+import { updateSession, loadSession, saveSessionId, GameState } from '../session';
 
 
 export default {
@@ -81,29 +80,25 @@ export default {
   },
 
   setup(){
-    const userName = ref("");
-    const sessionId = ref(loadSessionId());
     const history = reactive([] as string[]);
-    const cards = genCards();
-    const thePlayer = ref(0);
+    const gameState = reactive(new GameState());
+    gameState.init();
     const playedCards: Card[][] = reactive([...Array(5)].map(() => []));
     const discardedCards: Card[] = reactive([]);
-    const players = reactive([...Array(4)].map((_, i) => new Player(i === thePlayer.value ? userName.value : `Player ${i}`,
-      cards, i !== 0, drawCard)));
     const selectedCard = ref(-1);
     const globalTurn = ref(0);
     const lastRoundBegin = ref(-1);
-    const turn = computed(() => globalTurn.value % players.length);
+    const turn = computed(() => globalTurn.value % gameState.players.length);
     const tokens = ref(8);
     const strikes = ref(0);
     const debugMode = ref(false);
     const gameOver = computed(() => 3 <= strikes.value || playedCards.reduce(
       (pre: boolean, cur: Card[]) => pre && 0 < cur.length && cur[cur.length-1].number === 4, true) ||
-      0 <= lastRoundBegin.value && turn.value <= lastRoundBegin.value + players.length);
+      0 <= lastRoundBegin.value && turn.value <= lastRoundBegin.value + gameState.players.length);
 
     function playerName(player: Player){
-      const id = players.indexOf(player);
-      if(id === thePlayer.value){
+      const id = gameState.players.indexOf(player);
+      if(id === gameState.thePlayer){
         return "You";
       }
       else{
@@ -111,62 +106,17 @@ export default {
       }
     }
 
-    loadUserName().then(name => {
-      userName.value = name;
-      players[thePlayer.value].name = name;
-      players[thePlayer.value].playerId = userId;
-    });
-
-    function applySession(value?: SessionData | null) {
-      if(value){
-        cards.length = 0;
-        for(const card of value.fieldCards)
-          cards.push(card);
-        thePlayer.value = -1;
-        players.length = 0;
-        let foundSelf = false;
-        for(let idx = 0; idx < value.players.length; idx++){
-          const player = value.players[idx];
-          players.push(player);
-          if(player.playerId === userId){
-            thePlayer.value = idx;
-            foundSelf = true;
-          }
-        }
-
-        if(!foundSelf){
-          const firstNonPlayer = players.findIndex(player => !player.playerId);
-          if(0 <= firstNonPlayer){
-            players[firstNonPlayer].name = userName.value;
-            players[firstNonPlayer].playerId = userId;
-            players[firstNonPlayer].auto = false;
-            updateSession(sessionId.value, cards, players);
-          }
-        }
-      }
-    }
-
-    loadSession(sessionId.value).then(applySession);
-
-    db.collection('/sessions').doc(sessionId.value).onSnapshot({
-      next: data => {
-        if(data.exists){
-          applySession(deserializeSession(data));
-        }
-      }
-    });
-
     function tryNextMove(){
-      updateSession(sessionId.value, cards, players);
-      const playerInTurn = players[turn.value];
+      updateSession(gameState.sessionId, gameState.fieldCards, gameState.players);
+      const playerInTurn = gameState.players[turn.value];
       if(playerInTurn.auto && !gameOver.value){
-        setTimeout(() => playerInTurn.think(players, playedCards, tokens.value,
+        setTimeout(() => playerInTurn.think(gameState.players, playedCards, tokens.value,
           globalTurn.value, playCard, discardCard, hintNumber), 1000);
       }
     }
 
     function playerCardClick(player: Player, cidx: number){
-      if(turn.value !== players.indexOf(player)){
+      if(turn.value !== gameState.players.indexOf(player)){
         console.log("Hey, it's not your turn!");
         return;
       }
@@ -180,7 +130,8 @@ export default {
         alert("The game is over.");
         return;
       }
-      if(turn.value !== players.indexOf(player) || !autoPlay && player.auto){
+      if(turn.value !== gameState.players.indexOf(player) ||
+        !autoPlay && (player.auto || turn.value !== gameState.thePlayer)){
         alert("Hey, it's not your turn!");
         return;
       }
@@ -205,7 +156,7 @@ export default {
       if(striked)
         discardedCards.push(card);
 
-      const drawnCard = drawCard(cards, Math.floor(Math.random() * cards.length));
+      const drawnCard = drawCard(gameState.fieldCards, Math.floor(Math.random() * gameState.fieldCards.length));
       if(drawnCard)
         player.cards.push(drawnCard);
       else
@@ -226,7 +177,7 @@ export default {
         alert("The game is over.");
         return;
       }
-      if(turn.value !== players.indexOf(player) || !autoPlay && player.auto){
+      if(turn.value !== gameState.players.indexOf(player) || !autoPlay && player.auto){
         alert("Hey, it's not your turn!");
         return;
       }
@@ -237,7 +188,7 @@ export default {
       const card = player.cards[cidx];
       player.cards.splice(cidx, 1);
       discardedCards.push(card);
-      const drawnCard = drawCard(cards, Math.floor(Math.random() * cards.length));
+      const drawnCard = drawCard(gameState.fieldCards, Math.floor(Math.random() * gameState.fieldCards.length));
       if(drawnCard)
         player.cards.push(drawnCard);
       else
@@ -253,11 +204,11 @@ export default {
         alert("The game is over.");
         return;
       }
-      if(!autoPlay && players[turn.value].auto){
+      if(!autoPlay && gameState.players[turn.value].auto){
         alert("Hey, it's not your turn!");
         return;
       }
-      if(!autoPlay && players.indexOf(player) === thePlayer.value || players.indexOf(player) === turn.value){
+      if(!autoPlay && gameState.players.indexOf(player) === gameState.thePlayer || gameState.players.indexOf(player) === turn.value){
         alert("You can't hint yourself!");
         return;
       }
@@ -267,7 +218,7 @@ export default {
       }
       const affected = player.hintNumber(number, globalTurn.value);
       tokens.value--;
-      history.unshift(`${playerName(players[turn.value])} hinted ${playerName(player)} about ${
+      history.unshift(`${playerName(gameState.players[turn.value])} hinted ${playerName(player)} about ${
         formatCardLetters(affected)
       } number ${number+1}`);
       globalTurn.value++;
@@ -279,11 +230,11 @@ export default {
         alert("The game is over.");
         return;
       }
-      if(!autoPlay && players[turn.value].auto){
+      if(!autoPlay && gameState.players[turn.value].auto){
         alert("Hey, it's not your turn!");
         return;
       }
-      if(!autoPlay && players.indexOf(player) === thePlayer.value || players.indexOf(player) === turn.value){
+      if(!autoPlay && gameState.players.indexOf(player) === gameState.thePlayer || gameState.players.indexOf(player) === turn.value){
         alert("You can't hint yourself!");
         return;
       }
@@ -293,7 +244,7 @@ export default {
       }
       const affected = player.hintColor(color, globalTurn.value);
       tokens.value--;
-      history.unshift(`${playerName(players[turn.value])} hinted ${playerName(player)} about ${
+      history.unshift(`${playerName(gameState.players[turn.value])} hinted ${playerName(player)} about ${
         formatCardLetters(affected)
       } color ${Card.prototype.getColor(color)}`);
       globalTurn.value++;
@@ -301,16 +252,11 @@ export default {
     }
 
     function setUserName(){
-      db.collection("/users").doc(userId).set({name: userName.value});
-      if(sessionId.value && 0 <= thePlayer.value){
-        players[thePlayer.value].name = userName.value;
-        updateSession(sessionId.value, cards, players);
+      db.collection("/users").doc(userId).set({name: gameState.userName});
+      if(gameState.sessionId && 0 <= gameState.thePlayer){
+        gameState.players[gameState.thePlayer].name = gameState.userName;
+        updateSession(gameState.sessionId, gameState.fieldCards, gameState.players);
       }
-    }
-
-    function newSession(){
-      sessionId.value = generateSessionId();
-      updateSession(sessionId.value, cards, players);
     }
 
     async function joinSession(){
@@ -318,22 +264,20 @@ export default {
       if(!newId)
         return;
       const sessionData = await loadSession(newId);
-      applySession(sessionData);
-      sessionId.value = newId;
+      gameState.applySession(sessionData);
+      gameState.sessionId = newId;
       saveSessionId(newId);
     }
 
     return {
       history,
-      thePlayer,
-      players,
+      gameState,
       selectedCard,
       turn,
       tokens,
       strikes,
       playedCards,
       discardedCards,
-      cards,
       playerCardClick,
       playCard,
       discardCard,
@@ -342,10 +286,8 @@ export default {
       debugMode,
       gameOver,
       userId,
-      userName,
       setUserName,
-      sessionId,
-      newSession,
+      newSession: () => gameState.newSession(),
       joinSession,
     }
   },

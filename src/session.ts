@@ -1,7 +1,83 @@
 import firebase from 'firebase';
-import { db } from './main';
-import { Card } from './card';
+import { db, userId, loadUserName } from './main';
+import { Card, genCards, drawCard } from './card';
 import { Player } from './player';
+import WebHanabi from './components/WebHanabi.vue';
+
+export type SessionData = {
+  fieldCards: Card[];
+  players: Player[];
+}
+
+export class GameState {
+  userName: string;
+  sessionId: string;
+  fieldCards: Card[];
+  players: Player[];
+  thePlayer: number;
+
+  constructor(){
+    this.userName = "";
+    this.sessionId = loadSessionId();
+    this.fieldCards = genCards(),
+    this.players = [...Array(4)].map((_, i) => new Player(i === this.thePlayer ? this.userName : `Player ${i}`,
+      this.fieldCards, i !== 0, drawCard));
+    this.thePlayer = 0;
+  }
+
+  /// Defer initialization to enable event handlers
+  init() {
+    loadUserName().then(name => {
+      this.userName = name;
+      this.players[this.thePlayer].name = name;
+      this.players[this.thePlayer].playerId = userId;
+    });
+
+    loadSession(this.sessionId).then(value => this.applySession(value));
+
+    db.collection('/sessions').doc(this.sessionId).onSnapshot({
+      next: data => {
+        if(data.exists){
+          this.applySession(deserializeSession(data));
+        }
+      }
+    });
+  }
+
+  newSession(){
+    this.sessionId = generateSessionId();
+    updateSession(this.sessionId, this.fieldCards, this.players);
+  }
+
+  applySession(value?: SessionData | null) {
+    if(value){
+      this.fieldCards.length = 0;
+      for(const card of value.fieldCards)
+        this.fieldCards.push(card);
+      this.thePlayer = -1;
+      this.players.length = 0;
+      let foundSelf = false;
+      for(let idx = 0; idx < value.players.length; idx++){
+        const player = value.players[idx];
+        this.players.push(player);
+        if(player.playerId === userId){
+          this.thePlayer = idx;
+          foundSelf = true;
+        }
+      }
+
+      if(!foundSelf){
+        const firstNonPlayer = this.players.findIndex(player => !player.playerId);
+        if(0 <= firstNonPlayer){
+          this.players[firstNonPlayer].name = this.userName;
+          this.players[firstNonPlayer].playerId = userId;
+          this.players[firstNonPlayer].auto = false;
+          updateSession(this.sessionId, this.fieldCards, this.players);
+        }
+      }
+    }
+  }
+}
 
 // Sessions are supposed to be shared, so it's shorter than userId.
 const sessionIdLength = 20;
@@ -25,27 +101,27 @@ export function updateSession(sessionId: string, fieldCards: Card[], players: Pl
     });
 }
 
-export type SessionData = {
-    fieldCards: Card[];
-    players: Player[];
-}
-
 export function deserializeSession(doc?: firebase.firestore.DocumentData): SessionData | null {
-    if(!doc)
-        return null;
-    const fieldCards = doc.get("fieldCards") as string[];
-    const players = doc.get("players") as any[];
-    return { fieldCards: fieldCards.map((data) => {
-            const card = new Card;
-            card.fromString(data);
-            return card;
-        }),
-        players: players.map(data => {
-            const player = new Player("", [], undefined);
-            player.deserialize(data);
-            return player;
-        }),
-    };
+  if(!doc)
+    return null;
+  const fieldCards = doc.get("fieldCards") as string[] | null;
+  if(!fieldCards)
+    return null;
+  const players = doc.get("players") as any[] | null;
+  if(!players)
+    return null;
+  return {
+    fieldCards: fieldCards.map((data) => {
+        const card = new Card;
+        card.fromString(data);
+        return card;
+    }),
+    players: players.map(data => {
+        const player = new Player("", [], undefined);
+        player.deserialize(data);
+        return player;
+    }),
+  };
 }
 
 export async function loadSession(sessionId: string): Promise<SessionData | null> {
