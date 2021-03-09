@@ -24,8 +24,8 @@
     </template>
   </div>
   <div>
-    Played cards ({{playedCards.reduce((count, cards) => count + cards.length, 0)}}/25):
-    <span v-for="(cards, cidx) in playedCards" :key="cidx" :class="['card', cards.length ? cards[cards.length-1].getClass() : '']">
+    Played cards ({{gameState.playedCards.reduce((count, cards) => count + cards.length, 0)}}/25):
+    <span v-for="(cards, cidx) in gameState.playedCards" :key="cidx" :class="['card', cards.length ? cards[cards.length-1].getClass() : '']">
       {{cards.length ? cards[cards.length-1].toString() : ''}}
     </span>
   </div>
@@ -82,14 +82,13 @@ export default {
   setup(){
     const gameState = reactive(new GameState());
     gameState.init();
-    const playedCards: Card[][] = reactive([...Array(5)].map(() => []));
     const selectedCard = ref(-1);
     const lastRoundBegin = ref(-1);
     const turn = computed(() => gameState.globalTurn % gameState.players.length);
     const tokens = ref(8);
     const strikes = ref(0);
     const debugMode = ref(false);
-    const gameOver = computed(() => 3 <= strikes.value || playedCards.reduce(
+    const gameOver = computed(() => 3 <= strikes.value || gameState.playedCards.reduce(
       (pre: boolean, cur: Card[]) => pre && 0 < cur.length && cur[cur.length-1].number === 4, true) ||
       0 <= lastRoundBegin.value && turn.value <= lastRoundBegin.value + gameState.players.length);
 
@@ -107,7 +106,7 @@ export default {
       gameState.updateSession();
       const playerInTurn = gameState.players[turn.value];
       if(playerInTurn.auto && !gameOver.value){
-        setTimeout(() => playerInTurn.think(gameState.players, playedCards, tokens.value,
+        setTimeout(() => playerInTurn.think(gameState.players, gameState.playedCards, tokens.value,
           gameState.globalTurn, playCard, discardCard, hintNumber), 1000);
       }
     }
@@ -139,16 +138,16 @@ export default {
       const card = player.cards[cidx];
       player.cards.splice(cidx, 1);
       let striked = false;
-      if(playedCards[card.color].length === 0 && card.number !== 0){
+      if(gameState.playedCards[card.color].length === 0 && card.number !== 0){
         strikes.value++;
         striked = true;
       }
-      else if(0 < playedCards[card.color].length && card.number !== playedCards[card.color][playedCards[card.color].length-1].number + 1){
+      else if(0 < gameState.playedCards[card.color].length && card.number !== gameState.playedCards[card.color][gameState.playedCards[card.color].length-1].number + 1){
         strikes.value++;
         striked = true;
       }
       else{
-        playedCards[card.color].push(card);
+        gameState.playedCards[card.color].push(card);
       }
       if(striked)
         gameState.discardedCards.push(card);
@@ -164,7 +163,7 @@ export default {
         striked ? "a strike" : "ok"}`);
       if(gameOver.value){
         gameState.history.unshift(`The game is over! Your score was ${
-          playedCards.reduce((pre, cur) => pre + cur.length, 0)}`);
+          gameState.playedCards.reduce((pre, cur) => pre + cur.length, 0)}`);
       }
       tryNextMove();
     }
@@ -262,7 +261,6 @@ export default {
       turn,
       tokens,
       strikes,
-      playedCards,
       playerCardClick,
       playCard,
       discardCard,

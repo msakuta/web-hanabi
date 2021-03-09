@@ -9,6 +9,7 @@ export class GameState {
   history: string[] = [];
   fieldCards: Card[] = [];
   discardedCards: Card[] = [];
+  playedCards: Card[][] = [...Array(5)].map(() => []);
   players: Player[] = [];
   thePlayer = 0;
   globalTurn = 0;
@@ -24,6 +25,7 @@ export class GameState {
     this.history = [];
     this.fieldCards = genCards(),
     this.discardedCards = [];
+    this.playedCards = [...Array(5)].map(() => []);
     this.players = [...Array(4)].map((_, i) => new Player(i === this.thePlayer ? this.userName : `Player ${i}`,
       this.fieldCards, i !== 0, drawCard));
     this.players[this.thePlayer].playerId = userId;
@@ -60,6 +62,7 @@ export class GameState {
       history: this.history,
       fieldCards: this.fieldCards.map(card => card.toString()),
       discardedCards: this.discardedCards.map(card => card.toString()),
+      playedCards: this.playedCards.map(cards => cards.length),
       players: this.players.map(player => player.serialize()),
       globalTurn: this.globalTurn,
     });
@@ -76,6 +79,9 @@ export class GameState {
       return null;
     const discardedCards = doc.get("discardedCards") as string[] | undefined;
     if(!discardedCards)
+      return null;
+    const playedCards = doc.get("playedCards") as string[][] | undefined;
+    if(!playedCards)
       return null;
     const players = doc.get("players") as any[] | undefined;
     if(!players)
@@ -96,6 +102,9 @@ export class GameState {
       card.fromString(data);
       return card;
     });
+
+    this.playedCards = playedCards.map((size, color) => [...Array(size)].map((_, number) =>
+      new Card(number, color)));
 
     this.thePlayer = -1;
     let foundSelf = false;
