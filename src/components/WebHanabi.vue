@@ -86,9 +86,8 @@ export default {
     const playedCards: Card[][] = reactive([...Array(5)].map(() => []));
     const discardedCards: Card[] = reactive([]);
     const selectedCard = ref(-1);
-    const globalTurn = ref(0);
     const lastRoundBegin = ref(-1);
-    const turn = computed(() => globalTurn.value % gameState.players.length);
+    const turn = computed(() => gameState.globalTurn % gameState.players.length);
     const tokens = ref(8);
     const strikes = ref(0);
     const debugMode = ref(false);
@@ -111,7 +110,7 @@ export default {
       const playerInTurn = gameState.players[turn.value];
       if(playerInTurn.auto && !gameOver.value){
         setTimeout(() => playerInTurn.think(gameState.players, playedCards, tokens.value,
-          globalTurn.value, playCard, discardCard, hintNumber), 1000);
+          gameState.globalTurn, playCard, discardCard, hintNumber), 1000);
       }
     }
 
@@ -161,7 +160,7 @@ export default {
         player.cards.push(drawnCard);
       else
         lastRoundBegin.value = turn.value;
-      globalTurn.value++;
+      gameState.globalTurn++;
       selectedCard.value = -1;
       history.unshift(`${playerName(player)} played ${cardLetter(cidx)} which is ${card.toString()} and it was ${
         striked ? "a strike" : "ok"}`);
@@ -193,7 +192,7 @@ export default {
         player.cards.push(drawnCard);
       else
         lastRoundBegin.value = turn.value;
-      globalTurn.value++;
+      gameState.globalTurn++;
       tokens.value = Math.min(8, tokens.value + 1);
       history.unshift(`${playerName(player)} discarded ${cardLetter(cidx)} which is ${card.toString()}`);
       tryNextMove();
@@ -221,7 +220,7 @@ export default {
       history.unshift(`${playerName(gameState.players[turn.value])} hinted ${playerName(player)} about ${
         formatCardLetters(affected)
       } number ${number+1}`);
-      globalTurn.value++;
+      gameState.globalTurn++;
       tryNextMove();
     }
 
@@ -242,12 +241,12 @@ export default {
         alert("You used up all tokens!");
         return;
       }
-      const affected = player.hintColor(color, globalTurn.value);
+      const affected = player.hintColor(color, gameState.globalTurn);
       tokens.value--;
       history.unshift(`${playerName(gameState.players[turn.value])} hinted ${playerName(player)} about ${
         formatCardLetters(affected)
       } color ${Card.prototype.getColor(color)}`);
-      globalTurn.value++;
+      gameState.globalTurn++;
       tryNextMove();
     }
 

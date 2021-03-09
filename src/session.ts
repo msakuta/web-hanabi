@@ -7,6 +7,7 @@ import WebHanabi from './components/WebHanabi.vue';
 export type SessionData = {
   fieldCards: Card[];
   players: Player[];
+  globalTurn: number;
 }
 
 export class GameState {
@@ -15,6 +16,7 @@ export class GameState {
   fieldCards: Card[];
   players: Player[];
   thePlayer: number;
+  globalTurn: number;
 
   constructor(){
     this.userName = "";
@@ -23,6 +25,7 @@ export class GameState {
     this.players = [...Array(4)].map((_, i) => new Player(i === this.thePlayer ? this.userName : `Player ${i}`,
       this.fieldCards, i !== 0, drawCard));
     this.thePlayer = 0;
+    this.globalTurn = 0;
   }
 
   /// Defer initialization to enable event handlers
@@ -65,6 +68,7 @@ export class GameState {
           foundSelf = true;
         }
       }
+      this.globalTurn = value.globalTurn;
 
       if(!foundSelf){
         const firstNonPlayer = this.players.findIndex(player => !player.playerId);
@@ -82,6 +86,7 @@ export class GameState {
     db.collection("/sessions").doc(this.sessionId).update({
         fieldCards: this.fieldCards.map(card => card.toString()),
         players: this.players.map(player => player.serialize()),
+        globalTurn: this.globalTurn,
     });
   }
 
@@ -94,6 +99,9 @@ export class GameState {
     const players = doc.get("players") as any[] | null;
     if(!players)
       return null;
+    const globalTurn = doc.get("globalTurn") as number | null;
+    if(!globalTurn)
+      return null;
     return {
       fieldCards: fieldCards.map((data) => {
           const card = new Card;
@@ -105,6 +113,7 @@ export class GameState {
           player.deserialize(data);
           return player;
       }),
+      globalTurn,
     };
   }
   
