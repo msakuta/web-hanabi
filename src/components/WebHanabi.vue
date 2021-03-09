@@ -70,7 +70,7 @@ import PlayerCompo from './PlayerCompo.vue';
 import { Card, genCards, drawCard, cardLetter, formatCardLetters } from '../card';
 import { Player } from '../player';
 import { userId, db, loadUserName } from '../main';
-import { generateSessionId, updateSession, loadSession, loadSessionId, SessionData } from '../session';
+import { generateSessionId, updateSession, loadSession, loadSessionId, saveSessionId, SessionData } from '../session';
 
 
 export default {
@@ -111,7 +111,9 @@ export default {
     }
 
     loadUserName().then(name => {
-      userName.value = name
+      userName.value = name;
+      players[thePlayer.value].name = name;
+      players[thePlayer.value].playerId = userId;
     });
 
     function applySession(value?: SessionData | null) {
@@ -119,9 +121,27 @@ export default {
         cards.length = 0;
         for(const card of value.fieldCards)
           cards.push(card);
+        thePlayer.value = -1;
         players.length = 0;
-        for(const player of value.players)
+        let foundSelf = false;
+        for(let idx = 0; idx < value.players.length; idx++){
+          const player = value.players[idx];
           players.push(player);
+          if(player.playerId === userId){
+            thePlayer.value = idx;
+            foundSelf = true;
+          }
+        }
+
+        if(!foundSelf){
+          const firstNonPlayer = players.findIndex(player => !player.playerId);
+          if(0 <= firstNonPlayer){
+            players[firstNonPlayer].name = userName.value;
+            players[firstNonPlayer].playerId = userId;
+            players[firstNonPlayer].auto = false;
+            updateSession(sessionId.value, cards, players);
+          }
+        }
       }
     }
 
@@ -286,6 +306,8 @@ export default {
         return;
       const sessionData = await loadSession(newId);
       applySession(sessionData);
+      sessionId.value = newId;
+      saveSessionId(newId);
     }
 
     return {

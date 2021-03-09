@@ -65,3 +65,7 @@ export function loadSessionId(){
     }
     return sessionId;
 }
+
+export function saveSessionId(sessionId: string){
+    localStorage.setItem('WebHanabiSessionId', sessionId);
+}

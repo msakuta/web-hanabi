@@ -2,7 +2,7 @@
   <div :class="['frame', activeTurn ? 'activeFrame' : 'inactiveFrame']">
     <span style="position: absolute; left: 0; right: 0; width: 8em; height: 5em">
       <div>
-        {{activeTurn ? "* " : "  "}} Player {{idx}}:
+        {{activeTurn ? "* " : "  "}} {{player.name}}:
       </div>
       <label>
         <input type="checkbox" :checked="player.auto" @click="playerAutoClick">Auto

@@ -6,6 +6,7 @@ function countIf<T>(arr: Array<T>, f: ((t: T) => boolean)): number {
 
 interface SerializedPlayer {
   name: string;
+  playerId?: string;
   auto: boolean;
   cards: string[];
   lastHintedNumber?: { number: number; turn: number };
@@ -14,6 +15,7 @@ interface SerializedPlayer {
 
 export class Player {
   name = "";
+  playerId?: string;
   auto = false;
   cards: Card[];
   lastHintedNumber?: { number: number; turn: number };
@@ -33,6 +35,8 @@ export class Player {
       auto: this.auto,
       cards: this.cards.map(card => card.toString()),
     };
+    if(this.playerId)
+      ret.playerId = this.playerId;
     if(this.lastHintedNumber)
       ret.lastHintedNumber = this.lastHintedNumber;
     if(this.lastHintedColor)
@@ -42,6 +46,7 @@ export class Player {
 
   deserialize(data: SerializedPlayer) {
     this.name = data.name;
+    this.playerId = data.playerId;
     this.auto = data.auto;
     this.cards = data.cards.map(data => {
       const card = new Card;
