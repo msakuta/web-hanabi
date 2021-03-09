@@ -68,7 +68,7 @@ import { ref, reactive, computed } from 'vue';
 import PlayerCompo from './PlayerCompo.vue';
 import { Card, genCards, drawCard, cardLetter, formatCardLetters } from '../card';
 import { Player } from '../player';
-import { userId, db } from '../main';
+import { userId, db, loadUserName } from '../main';
 import { generateSessionId, updateSession, loadSession, loadSessionId } from '../session';
 
 
@@ -86,7 +86,8 @@ export default {
     const thePlayer = ref(0);
     const playedCards: Card[][] = reactive([...Array(5)].map(() => []));
     const discardedCards: Card[] = reactive([]);
-    const players = reactive([...Array(4)].map((_, i) => new Player(cards, i !== 0, drawCard)));
+    const players = reactive([...Array(4)].map((_, i) => new Player(i === thePlayer.value ? userName.value : `Player ${i}`,
+      cards, i !== 0, drawCard)));
     const selectedCard = ref(-1);
     const globalTurn = ref(0);
     const lastRoundBegin = ref(-1);
@@ -108,12 +109,18 @@ export default {
       }
     }
 
+    loadUserName().then(name => {
+      userName.value = name
+    });
+
     loadSession(sessionId.value).then((value) => {
       if(value){
-        const fieldCards = value as Card[];
         cards.length = 0;
-        for(const card of fieldCards)
+        for(const card of value.fieldCards)
           cards.push(card);
+        players.length = 0;
+        for(const player of value.players)
+          players.push(player);
       }
     });
 

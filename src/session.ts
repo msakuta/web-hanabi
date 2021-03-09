@@ -20,19 +20,26 @@ export function generateSessionId(){
 export function updateSession(sessionId: string, fieldCards: Card[], players: Player[]){
     db.collection("/sessions").doc(sessionId).update({
         fieldCards: fieldCards.map(card => card.toString()),
-        players: JSON.stringify(players),
+        players: players.map(player => player.serialize()),
     });
 }
 
 export async function loadSession(sessionId: string){
     const doc = await db.collection("/sessions").doc(sessionId).get();
     if(doc.exists){
-        const fieldCards = doc.data()?.fieldCards as string[];
-        return fieldCards.map((data) => {
-            const card = new Card;
-            card.fromString(data);
-            return card;
-        });
+        const fieldCards = doc.get("fieldCards") as string[];
+        const players = doc.get("players") as any[];
+        return { fieldCards: fieldCards.map((data) => {
+                const card = new Card;
+                card.fromString(data);
+                return card;
+            }),
+            players: players.map(data => {
+                const player = new Player("", [], undefined);
+                player.deserialize(data);
+                return player;
+            }),
+        };
     }
     else{
         return null;

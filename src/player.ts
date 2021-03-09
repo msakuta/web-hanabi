@@ -4,15 +4,52 @@ function countIf<T>(arr: Array<T>, f: ((t: T) => boolean)): number {
   return arr.reduce((accum, item) => accum + (f(item) ? 1 : 0), 0);
 }
 
+interface SerializedPlayer {
+  name: string;
+  auto: boolean;
+  cards: string[];
+  lastHintedNumber?: { number: number; turn: number };
+  lastHintedColor?: { color: number; turn: number };
+}
+
 export class Player {
+  name = "";
   auto = false;
   cards: Card[];
   lastHintedNumber?: { number: number; turn: number };
   lastHintedColor?: { color: number; turn: number };
 
-  constructor(cards: Card[], auto = false, drawCard: ((cards: Card[], cidx: number) => Card)){
+
+  constructor(name: string, cards: Card[], auto = false, drawCard?: ((cards: Card[], cidx: number) => Card)){
+    this.name = name;
     this.auto = auto;
-    this.cards = [...Array(4)].map(() => drawCard(cards, Math.floor(Math.random() * cards.length)));
+    this.cards = drawCard ?
+      [...Array(4)].map(() => drawCard(cards, Math.floor(Math.random() * cards.length))) : [];
+  }
+
+  serialize(): SerializedPlayer {
+    const ret: SerializedPlayer = {
+      name: this.name,
+      auto: this.auto,
+      cards: this.cards.map(card => card.toString()),
+    };
+    if(this.lastHintedNumber)
+      ret.lastHintedNumber = this.lastHintedNumber;
+    if(this.lastHintedColor)
+      ret.lastHintedColor = this.lastHintedColor;
+    return ret;
+  }
+
+  deserialize(data: SerializedPlayer) {
+    this.name = data.name;
+    this.auto = data.auto;
+    this.cards = data.cards.map(data => {
+      const card = new Card;
+      card.fromString(data);
+      return card;
+    })
+    this.lastHintedNumber = data.lastHintedNumber;
+    this.lastHintedColor = data.lastHintedColor;
   }
 
   think(players: Player[],

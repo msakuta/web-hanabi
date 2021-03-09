@@ -33,6 +33,7 @@ function randomizeUserId(){
     for(let i = 0; i < userIdLength; i++)
         userId += Math.floor(Math.random() * 16).toString(16);
     localStorage.setItem('WebHanabiUserId', userId);
+    db.collection("/users").doc(userId).set({name: "new user"});
     return userId;
 }
 
@@ -56,7 +57,13 @@ function loadUserId(){
 
 export const userId = loadUserId();
 
-db.collection("/users").doc(userId).set({hello: "world"})
+export async function loadUserName(){
+    const data = await db.collection("/users").doc(userId).get();
+    if(data.exists){
+        return data.get("name") as string;
+    }
+    return "new user";
+}
 
 
 createApp(App).mount('#app')
