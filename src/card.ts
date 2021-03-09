@@ -3,13 +3,18 @@ export class Card {
   color = 1;
   possibleNumbers = (1 << 5) - 1; // Bitfield [0, 32)
   possibleColors = (1 << 5) - 1; // Bitfield [0, 32)
-  constructor(number: number, color: number) {
+  constructor(number = 0, color = 0) {
     this.number = number;
     this.color = color;
   }
 
   toString() {
-    return `${this.getColor()}${this.number + 1} `;
+    return `${this.getColor()}${this.number + 1}`;
+  }
+
+  fromString(s: string) {
+    this.color = fromColor(s[0]);
+    this.number = s[1].charCodeAt(0) - "1".charCodeAt(0);
   }
 
   getColor(color: number | null = null) {
@@ -89,4 +94,16 @@ export function formatCardLetters(indices: number[]) {
         indices.length === 1 ? cardLetter(indices[0]) + " is" :
         indices.reduce((s, c, i) => (i === indices.length - 1 ? s + " and " :
           0 < i ? s + ", " : "") + cardLetter(c), "") + " are";
+}
+
+function fromColor(color: string): number {
+  switch(color){
+    case "r": return 0;
+    case "g": return 1;
+    case "b": return 2;
+    case "y": return 3;
+    case "w": return 4;
+    case "x": return 5;
+    default: return -1;
+  }
 }

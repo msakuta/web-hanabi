@@ -10,11 +10,15 @@
     <button @click="setUserName">Set</button>
   </div>
   <div>
+    Session id: {{sessionId}}
+    <button @click="newSession">New session</button>
+  </div>
+  <div>
     Remaining cards ({{cards.length}})
     <template v-if="debugMode">
       :
       <span v-for="(card, cidx) in cards" :key="cidx" :class="['card', card.getClass()]">
-        {{card.toString()}}
+        {{card.toString() + " "}}
       </span>
     </template>
   </div>
@@ -65,6 +69,8 @@ import PlayerCompo from './PlayerCompo.vue';
 import { Card, genCards, drawCard, cardLetter, formatCardLetters } from '../card';
 import { Player } from '../player';
 import { userId, db } from '../main';
+import { generateSessionId, updateSession, loadSession, loadSessionId } from '../session';
+
 
 export default {
   name: 'WebHanabi',
@@ -74,6 +80,7 @@ export default {
 
   setup(){
     const userName = ref("");
+    const sessionId = ref(loadSessionId());
     const history = reactive([] as string[]);
     const cards = genCards();
     const thePlayer = ref(0);
@@ -101,7 +108,17 @@ export default {
       }
     }
 
+    loadSession(sessionId.value).then((value) => {
+      if(value){
+        const fieldCards = value as Card[];
+        cards.length = 0;
+        for(const card of fieldCards)
+          cards.push(card);
+      }
+    });
+
     function tryNextMove(){
+      updateSession(sessionId.value, cards, players);
       const playerInTurn = players[turn.value];
       if(playerInTurn.auto && !gameOver.value){
         setTimeout(() => playerInTurn.think(players, playedCards, tokens.value,
@@ -248,6 +265,11 @@ export default {
       db.collection("/users").doc(userId).set({name: userName.value});
     }
 
+    function newSession(){
+      sessionId.value = generateSessionId();
+      updateSession(sessionId.value, cards, players);
+    }
+
     return {
       history,
       thePlayer,
@@ -269,6 +291,8 @@ export default {
       userId,
       userName,
       setUserName,
+      sessionId,
+      newSession,
     }
   },
 }
