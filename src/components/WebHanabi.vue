@@ -55,7 +55,7 @@
     :isThisPlayer="!debugMode && gameState.thePlayer === idx"
     :activeTurn="!gameOver && turn === idx"
     :selectedCard="selectedCard"
-    @playerAutoClick="player.auto = !player.auto"
+    @playerAutoClick="togglePlayerAuto(player)"
     @playerCardClick="(cidx) => playerCardClick(player, cidx)"
     @playCard="(cidx) => playCard(player, cidx)"
     @discardCard="(cidx) => discardCard(player, cidx)"
@@ -100,12 +100,18 @@ export default {
       }
     }
 
+    let pendingNextMove = false;
+
     function tryNextMove(){
       gameState.updateSession();
       const playerInTurn = gameState.players[turn.value];
-      if(playerInTurn.auto && !gameOver.value){
-        setTimeout(() => playerInTurn.think(gameState.players, gameState.playedCards, gameState.tokens,
-          gameState.globalTurn, playCard, discardCard, hintNumber), 1000);
+      if(playerInTurn.auto && !gameOver.value && !pendingNextMove){
+        setTimeout(() => {
+          playerInTurn.think(gameState.players, gameState.playedCards, gameState.tokens,
+            gameState.globalTurn, playCard, discardCard, hintNumber);
+          pendingNextMove = false;
+        }, 1000);
+        pendingNextMove = true;
       }
     }
 
@@ -266,6 +272,10 @@ export default {
       gameOver,
       userId,
       setUserName,
+      togglePlayerAuto: (player: Player) => {
+        player.auto = !player.auto;
+        tryNextMove();
+      },
       newSession: () => gameState.newSession(),
       joinSession: () => gameState.joinSession(),
     }
