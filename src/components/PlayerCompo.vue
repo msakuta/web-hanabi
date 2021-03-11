@@ -1,7 +1,7 @@
 <template>
   <div :class="['frame', activeTurn ? 'activeFrame' : 'inactiveFrame']">
     <span style="position: absolute; left: 0; right: 0; width: 8em; height: 5em">
-      <div>
+      <div :class="isThisPlayer ? 'selfBorder' : ''">
         {{activeTurn ? "* " : "  "}} {{player.name}}:
       </div>
       <label>
@@ -22,14 +22,14 @@
         </div>
         <span v-for="j in Array(5).fill().map((_, i)=>i)"
           :key="j"
-          :class="['small', card.possibleNumbers & (1 << j) ? '' : 'notPossible']"
+          :class="['small', card.possibleNumbers & (1 << j) ? 'possible' : 'notPossible']"
           :style="`left: ${j * 5 + 1}px;`">
           {{j + 1}}
         </span>
         <br>
         <span v-for="j in Array(5).fill().map((_, i)=>i)"
           :key="j"
-          :class="['small', card.possibleColors & (1 << j) ? '' : 'notPossible']"
+          :class="['small', card.possibleColors & (1 << j) ? 'possible' : 'notPossible']"
           :style="`left: ${j * 5 + 1}px;`">
           {{getColor(j)}}
         </span>
@@ -159,8 +159,14 @@ export default {
   border: solid 1px #1f2f2f;
   background-color: #001f1f;
 }
+.selfBorder {
+  border: solid 1px #00ff00;
+}
 .small {
   font-size: 80%;
+}
+.possible {
+  color: #9babab;
 }
 .notPossible {
   color: #1c1e2f
