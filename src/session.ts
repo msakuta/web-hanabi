@@ -64,8 +64,8 @@ export class GameState {
   updateSession(){
     db.collection("/sessions").doc(this.sessionId).update({
       history: this.history,
-      fieldCards: this.fieldCards.map(card => card.toString()),
-      discardedCards: this.discardedCards.map(card => card.toString()),
+      fieldCards: this.fieldCards.map(card => card.serialize()),
+      discardedCards: this.discardedCards.map(card => card.serialize()),
       playedCards: this.playedCards.map(cards => cards.length),
       players: this.players.map(player => player.serialize()),
       globalTurn: this.globalTurn,
@@ -106,13 +106,13 @@ export class GameState {
 
     this.fieldCards = fieldCards.map((data) => {
       const card = new Card;
-      card.fromString(data);
+      card.deserialize(data);
       return card;
     });
 
     this.discardedCards = discardedCards.map((data) => {
       const card = new Card;
-      card.fromString(data);
+      card.deserialize(data);
       return card;
     });
 

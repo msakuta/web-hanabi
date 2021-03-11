@@ -12,9 +12,23 @@ export class Card {
     return `${this.getColor()}${this.number + 1}`;
   }
 
-  fromString(s: string) {
+  serialize() {
+    // We encode the card state to compact string because this is a "leaf" of the
+    // data structure.
+    // Technically, possible numbers and colors could be reconstructed from hint
+    // history, but it's tedious to accumulate all the history and make sure it
+    // is consistent, so we just embed that information to serialized string.
+    return this.toString() + `:${this.possibleNumbers}:${this.possibleColors}`;
+  }
+
+  deserialize(s: string) {
     this.color = fromColor(s[0]);
     this.number = s[1].charCodeAt(0) - "1".charCodeAt(0);
+    const splits = s.substr(3).split(":");
+    if(0 < splits.length)
+      this.possibleNumbers = parseInt(splits[0]);
+    if(1 < splits.length)
+      this.possibleColors = parseInt(splits[1]);
   }
 
   getColor(color: number | null = null) {

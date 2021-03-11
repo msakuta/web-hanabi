@@ -33,7 +33,7 @@ export class Player {
     const ret: SerializedPlayer = {
       name: this.name,
       auto: this.auto,
-      cards: this.cards.map(card => card.toString()),
+      cards: this.cards.map(card => card.serialize()),
     };
     if(this.playerId)
       ret.playerId = this.playerId;
@@ -50,7 +50,7 @@ export class Player {
     this.auto = data.auto;
     this.cards = data.cards.map(data => {
       const card = new Card;
-      card.fromString(data);
+      card.deserialize(data);
       return card;
     })
     this.lastHintedNumber = data.lastHintedNumber;
