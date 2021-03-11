@@ -13,6 +13,8 @@ export class GameState {
   players: Player[] = [];
   thePlayer = 0;
   globalTurn = 0;
+  tokens = 8;
+  strikes = 0;
 
   constructor(){
     this.userName = "";
@@ -30,6 +32,8 @@ export class GameState {
       this.fieldCards, i !== 0, drawCard));
     this.players[this.thePlayer].playerId = userId;
     this.globalTurn = 0;
+    this.tokens = 8;
+    this.strikes = 0;
   }
 
   /// Defer initialization to enable event handlers
@@ -65,6 +69,8 @@ export class GameState {
       playedCards: this.playedCards.map(cards => cards.length),
       players: this.players.map(player => player.serialize()),
       globalTurn: this.globalTurn,
+      tokens: this.tokens,
+      strikes: this.strikes,
     });
   }
 
@@ -89,6 +95,13 @@ export class GameState {
     const globalTurn = doc.get("globalTurn") as number | undefined;
     if(globalTurn === undefined)
       return null;
+    const tokens = doc.get("tokens") as number | undefined;
+    if(tokens === undefined)
+      return null;
+    const strikes = doc.get("strikes") as number | undefined;
+    if(strikes === undefined)
+      return null;
+  
     this.history = history;
 
     this.fieldCards = fieldCards.map((data) => {
@@ -119,6 +132,8 @@ export class GameState {
     });
 
     this.globalTurn = globalTurn;
+    this.tokens = tokens;
+    this.strikes = strikes;
 
     if(!foundSelf){
       const firstNonPlayer = this.players.findIndex(player => !player.playerId);

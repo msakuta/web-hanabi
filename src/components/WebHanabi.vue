@@ -43,10 +43,10 @@
     </ul>
   </div>
   <div>
-    Tokens: {{tokens}}
+    Tokens: {{gameState.tokens}}
   </div>
   <div>
-    Strikes: {{strikes}}
+    Strikes: {{gameState.strikes}}
   </div>
   <player-compo v-for="(player, idx) in gameState.players"
     :key="idx"
@@ -85,10 +85,8 @@ export default {
     const selectedCard = ref(-1);
     const lastRoundBegin = ref(-1);
     const turn = computed(() => gameState.globalTurn % gameState.players.length);
-    const tokens = ref(8);
-    const strikes = ref(0);
     const debugMode = ref(false);
-    const gameOver = computed(() => 3 <= strikes.value || gameState.playedCards.reduce(
+    const gameOver = computed(() => 3 <= gameState.strikes || gameState.playedCards.reduce(
       (pre: boolean, cur: Card[]) => pre && 0 < cur.length && cur[cur.length-1].number === 4, true) ||
       0 <= lastRoundBegin.value && turn.value <= lastRoundBegin.value + gameState.players.length);
 
@@ -106,7 +104,7 @@ export default {
       gameState.updateSession();
       const playerInTurn = gameState.players[turn.value];
       if(playerInTurn.auto && !gameOver.value){
-        setTimeout(() => playerInTurn.think(gameState.players, gameState.playedCards, tokens.value,
+        setTimeout(() => playerInTurn.think(gameState.players, gameState.playedCards, gameState.tokens,
           gameState.globalTurn, playCard, discardCard, hintNumber), 1000);
       }
     }
@@ -139,11 +137,11 @@ export default {
       player.cards.splice(cidx, 1);
       let striked = false;
       if(gameState.playedCards[card.color].length === 0 && card.number !== 0){
-        strikes.value++;
+        gameState.strikes++;
         striked = true;
       }
       else if(0 < gameState.playedCards[card.color].length && card.number !== gameState.playedCards[card.color][gameState.playedCards[card.color].length-1].number + 1){
-        strikes.value++;
+        gameState.strikes++;
         striked = true;
       }
       else{
@@ -190,7 +188,7 @@ export default {
       else
         lastRoundBegin.value = turn.value;
       gameState.globalTurn++;
-      tokens.value = Math.min(8, tokens.value + 1);
+      gameState.tokens = Math.min(8, gameState.tokens + 1);
       gameState.history.unshift(`${playerName(player)} discarded ${cardLetter(cidx)} which is ${card.toString()}`);
       tryNextMove();
     }
@@ -208,12 +206,12 @@ export default {
         alert("You can't hint yourself!");
         return;
       }
-      if(tokens.value <= 0){
+      if(gameState.tokens <= 0){
         alert("You used up all tokens!");
         return;
       }
-      const affected = player.hintNumber(number, globalTurn.value);
-      tokens.value--;
+      const affected = player.hintNumber(number, gameState.globalTurn);
+      gameState.tokens--;
       gameState.history.unshift(`${playerName(gameState.players[turn.value])} hinted ${playerName(player)} about ${
         formatCardLetters(affected)
       } number ${number+1}`);
@@ -234,12 +232,12 @@ export default {
         alert("You can't hint yourself!");
         return;
       }
-      if(tokens.value <= 0){
+      if(gameState.tokens <= 0){
         alert("You used up all tokens!");
         return;
       }
       const affected = player.hintColor(color, gameState.globalTurn);
-      tokens.value--;
+      gameState.tokens--;
       gameState.history.unshift(`${playerName(gameState.players[turn.value])} hinted ${playerName(player)} about ${
         formatCardLetters(affected)
       } color ${Card.prototype.getColor(color)}`);
@@ -259,8 +257,6 @@ export default {
       gameState,
       selectedCard,
       turn,
-      tokens,
-      strikes,
       playerCardClick,
       playCard,
       discardCard,
