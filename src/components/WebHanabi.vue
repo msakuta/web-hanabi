@@ -107,9 +107,14 @@ export default {
       const playerInTurn = gameState.players[turn.value];
       if(playerInTurn.auto && !gameOver.value && !pendingNextMove){
         setTimeout(() => {
+          // The player could have recreated by update from server while waiting the timeout,
+          // so we need to get the instance from player list again.
+          const playerInTurn = gameState.players[turn.value];
           playerInTurn.think(gameState.players, gameState.playedCards, gameState.tokens,
             gameState.globalTurn, playCard, discardCard, hintNumber);
           pendingNextMove = false;
+          // Try setting next even after clearing pendingNextMove flag
+          tryNextMove();
         }, 1000);
         pendingNextMove = true;
       }
