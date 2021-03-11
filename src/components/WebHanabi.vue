@@ -105,12 +105,16 @@ export default {
     function tryNextMove(){
       gameState.updateSession();
       const playerInTurn = gameState.players[turn.value];
-      if(playerInTurn.auto && !gameOver.value && !pendingNextMove){
+
+      // Currently, only the host (the first player that has started the session) has the right
+      // to play the AI. Ideally it should be handled by the server (such as Firebase Functions
+      // or AWS lambda), but we're poor!
+      if(playerInTurn.auto && !gameOver.value && !pendingNextMove && gameState.thePlayer === 0){
         setTimeout(() => {
           // The player could have recreated by update from server while waiting the timeout,
           // so we need to get the instance from player list again.
           const playerInTurn = gameState.players[turn.value];
-          playerInTurn.think(gameState.players, gameState.playedCards, gameState.tokens,
+          playerInTurn.think(gameState,
             gameState.globalTurn, playCard, discardCard, hintNumber);
           pendingNextMove = false;
           // Try setting next even after clearing pendingNextMove flag
