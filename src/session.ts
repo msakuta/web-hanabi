@@ -176,6 +176,16 @@ export class GameState {
     this.subscribe();
     saveSessionId(newId);
   }
+
+  playerName(player: Player){
+    const id = this.players.indexOf(player);
+    if(id === this.thePlayer){
+      return "You";
+    }
+    else{
+      return `Player ${id}`;
+    }
+  }
 }
 
 // Sessions are supposed to be shared, so it's shorter than userId.

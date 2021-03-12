@@ -38,7 +38,7 @@
   <div class="history">
     <ul>
       <template v-for="item in gameState.history" :key="item">
-        <li>{{item}}</li>
+        <li>{{substituteHistory(item)}}</li>
       </template>
     </ul>
   </div>
@@ -89,16 +89,6 @@ export default {
     const gameOver = computed(() => 3 <= gameState.strikes || gameState.playedCards.reduce(
       (pre: boolean, cur: Card[]) => pre && 0 < cur.length && cur[cur.length-1].number === 4, true) ||
       0 <= lastRoundBegin.value && turn.value <= lastRoundBegin.value + gameState.players.length);
-
-    function playerName(player: Player){
-      const id = gameState.players.indexOf(player);
-      if(id === gameState.thePlayer){
-        return "You";
-      }
-      else{
-        return `Player ${id}`;
-      }
-    }
 
     let pendingNextMove = false;
 
@@ -175,8 +165,8 @@ export default {
         lastRoundBegin.value = turn.value;
       gameState.globalTurn++;
       selectedCard.value = -1;
-      gameState.history.unshift(`${playerName(player)} played ${cardLetter(cidx)} which is ${card.toString()} and it was ${
-        striked ? "a strike" : "ok"}`);
+      gameState.history.unshift(`{P${gameState.players.indexOf(player)}} played ${cardLetter(cidx)} which is ${
+        card.toString()} and it was ${striked ? "a strike" : "ok"}`);
       if(gameOver.value){
         gameState.history.unshift(`The game is over! Your score was ${
           gameState.playedCards.reduce((pre, cur) => pre + cur.length, 0)}`);
@@ -208,7 +198,7 @@ export default {
         lastRoundBegin.value = turn.value;
       gameState.globalTurn++;
       gameState.tokens = Math.min(8, gameState.tokens + 1);
-      gameState.history.unshift(`${playerName(player)} discarded ${cardLetter(cidx)} which is ${card.toString()}`);
+      gameState.history.unshift(`{P${gameState.players.indexOf(player)}} discarded ${cardLetter(cidx)} which is ${card.toString()}`);
       tryNextMove();
     }
 
@@ -232,7 +222,7 @@ export default {
       }
       const affected = player.hintNumber(number, gameState.globalTurn);
       gameState.tokens--;
-      gameState.history.unshift(`${playerName(gameState.players[turn.value])} hinted ${playerName(player)} about ${
+      gameState.history.unshift(`{P${turn.value}} hinted {P${gameState.players.indexOf(player)}} about ${
         formatCardLetters(affected)
       } number ${number+1}`);
       gameState.globalTurn++;
@@ -259,7 +249,7 @@ export default {
       }
       const affected = player.hintColor(color, gameState.globalTurn);
       gameState.tokens--;
-      gameState.history.unshift(`${playerName(gameState.players[turn.value])} hinted ${playerName(player)} about ${
+      gameState.history.unshift(`{P${turn.value}} hinted {P${gameState.players.indexOf(player)}} about ${
         formatCardLetters(affected)
       } color ${Card.prototype.getColor(color)}`);
       gameState.globalTurn++;
@@ -272,6 +262,11 @@ export default {
         gameState.players[gameState.thePlayer].name = gameState.userName;
         gameState.updateSession();
       }
+    }
+
+    function substituteHistory(item: string){
+      return gameState.players.reduce((ss, player, j) =>
+        ss.replaceAll(`{P${j}}`, j === gameState.thePlayer ? "You" : player.name), item);
     }
 
     return {
@@ -293,6 +288,7 @@ export default {
       },
       newSession: () => gameState.newSession(),
       joinSession: () => gameState.joinSession(),
+      substituteHistory,
     }
   },
 }
