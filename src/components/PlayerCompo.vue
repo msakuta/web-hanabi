@@ -1,7 +1,7 @@
 <template>
   <div :class="['frame', activeTurn ? 'activeFrame' : 'inactiveFrame']">
     <span style="position: absolute; left: 0; right: 0; width: 8em; height: 5em">
-      <div :class="isThisPlayer ? 'selfBorder' : ''">
+      <div :class="isSelfPlayer ? 'selfBorder' : ''">
         {{activeTurn ? "* " : "  "}} {{player.name}}:
       </div>
       <label>
@@ -11,14 +11,14 @@
     <span style="position: absolute; left: 8em; top: 0; width: 20em; height: 5em;">
       <span v-for="(card, cidx) in player.cards"
         :key="cidx"
-        :class="['card', 'noselect', isThisPlayer ? 'hidden' : card.getClass(), activeTurn && cidx === selectedCard ? 'selected' : '']"
+        :class="['card', 'noselect', !debugMode && isSelfPlayer ? 'hidden' : card.getClass(), activeTurn && cidx === selectedCard ? 'selected' : '']"
         :style="`left: ${cidx * 5}em;`"
         @click="playerCardClick(cidx)">
         <div style="font-size: +2; font-weight: bold;">
           <span class="cardLetter">
             {{cardLetter(cidx)}}: 
           </span>
-          {{isThisPlayer ? "??" : card.toString()}}
+          {{!debugMode && isSelfPlayer ? "??" : card.toString()}}
         </div>
         <span v-for="j in Array(5).fill().map((_, i)=>i)"
           :key="j"
@@ -62,7 +62,8 @@ import { Player } from '../player';
 
 type Props = {
   idx: number;
-  isThisPlayer: boolean;
+  isSelfPlayer: boolean;
+  debugMode: boolean;
   player: Player;
   selectedCard: number;
   activeTurn: boolean;
@@ -72,7 +73,8 @@ export default {
   name: 'Player ',
   props: {
     idx: Number,
-    isThisPlayer: Boolean,
+    isSelfPlayer: Boolean,
+    debugMode: Boolean,
     player: Object,
     selectedCard: Number,
     activeTurn: Boolean,
