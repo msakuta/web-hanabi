@@ -18,6 +18,7 @@ export class GameState {
   strikes = 0;
   startDate = 0;
   lastRoundBegin = -1;
+  tryNextMove?: (noUpdate: boolean) => void;
 
   constructor(){
     this.userName = "";
@@ -69,6 +70,12 @@ export class GameState {
       next: data => {
         if(data.exists){
           this.deserializeSession(data);
+
+          // When another player than the host plays, try to run an AI if the next player was an AI.
+          // Do not upload the state because it would make infinite loop.
+          if(this.tryNextMove){
+            this.tryNextMove(true);
+          }
         }
       }
     });

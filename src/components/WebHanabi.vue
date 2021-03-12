@@ -88,8 +88,9 @@ export default {
 
     let pendingNextMove = false;
 
-    function tryNextMove(){
-      gameState.updateSession();
+    function tryNextMove(noUpdate = false){
+      if(!noUpdate)
+        gameState.updateSession();
       const playerInTurn = gameState.players[turn.value];
 
       // Currently, only the host (the first player that has started the session) has the right
@@ -109,6 +110,8 @@ export default {
         }, 1000);
       }
     }
+
+    gameState.tryNextMove = tryNextMove;
 
     function playerCardClick(player: Player, cidx: number){
       if(turn.value !== gameState.players.indexOf(player)){
