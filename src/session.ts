@@ -17,11 +17,20 @@ export class GameState {
   tokens = 8;
   strikes = 0;
   startDate = 0;
+  lastRoundBegin = -1;
 
   constructor(){
     this.userName = "";
     this.sessionId = loadSessionId();
     this.resetGame();
+  }
+
+  get gameOver() {
+    return 3 <= this.strikes || this.playedCards.reduce(
+      (pre: boolean, cur: Card[]) =>
+        pre && 0 < cur.length && cur[cur.length-1].number === 4, true) ||
+          0 <= this.lastRoundBegin && this.globalTurn
+            <= this.lastRoundBegin + this.players.length;
   }
 
   resetGame() {
@@ -37,6 +46,7 @@ export class GameState {
     this.tokens = 8;
     this.strikes = 0;
     this.startDate = Date.now();
+    this.lastRoundBegin = -1;
   }
 
   /// Defer initialization to enable event handlers

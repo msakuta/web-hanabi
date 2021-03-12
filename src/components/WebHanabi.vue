@@ -53,7 +53,7 @@
     :idx="idx"
     :player="player"
     :isThisPlayer="!debugMode && gameState.thePlayer === idx"
-    :activeTurn="!gameOver && turn === idx"
+    :activeTurn="!gameState.gameOver && turn === idx"
     :selectedCard="selectedCard"
     @playerAutoClick="togglePlayerAuto(player)"
     @playerCardClick="(cidx) => playerCardClick(player, cidx)"
@@ -83,12 +83,8 @@ export default {
     const gameState = reactive(new GameState());
     gameState.init();
     const selectedCard = ref(-1);
-    const lastRoundBegin = ref(-1);
     const turn = computed(() => gameState.globalTurn % gameState.players.length);
     const debugMode = ref(false);
-    const gameOver = computed(() => 3 <= gameState.strikes || gameState.playedCards.reduce(
-      (pre: boolean, cur: Card[]) => pre && 0 < cur.length && cur[cur.length-1].number === 4, true) ||
-      0 <= lastRoundBegin.value && turn.value <= lastRoundBegin.value + gameState.players.length);
 
     let pendingNextMove = false;
 
@@ -99,7 +95,7 @@ export default {
       // Currently, only the host (the first player that has started the session) has the right
       // to play the AI. Ideally it should be handled by the server (such as Firebase Functions
       // or AWS lambda), but we're poor!
-      if(playerInTurn.auto && !gameOver.value && !pendingNextMove && gameState.thePlayer === 0){
+      if(playerInTurn.auto && !gameState.gameOver && !pendingNextMove && gameState.thePlayer === 0){
         pendingNextMove = true;
         setTimeout(() => {
           // The player could have recreated by update from server while waiting the timeout,
@@ -126,7 +122,7 @@ export default {
     }
 
     function playCard(player: Player, cidx: number, autoPlay = false){
-      if(gameOver.value){
+      if(gameState.gameOver){
         alert("The game is over.");
         return;
       }
@@ -162,12 +158,12 @@ export default {
       if(drawnCard)
         player.cards.push(drawnCard);
       else
-        lastRoundBegin.value = turn.value;
+        gameState.lastRoundBegin = gameState.globalTurn;
       gameState.globalTurn++;
       selectedCard.value = -1;
       gameState.history.unshift(`{P${gameState.players.indexOf(player)}} played ${cardLetter(cidx)} which is ${
         card.toString()} and it was ${striked ? "a strike" : "ok"}`);
-      if(gameOver.value){
+      if(gameState.gameOver){
         gameState.history.unshift(`The game is over! Your score was ${
           gameState.playedCards.reduce((pre, cur) => pre + cur.length, 0)}`);
       }
@@ -175,7 +171,7 @@ export default {
     }
 
     function discardCard(player: Player, cidx: number, autoPlay = false){
-      if(gameOver.value){
+      if(gameState.gameOver){
         alert("The game is over.");
         return;
       }
@@ -195,7 +191,7 @@ export default {
       if(drawnCard)
         player.cards.push(drawnCard);
       else
-        lastRoundBegin.value = turn.value;
+        gameState.lastRoundBegin = gameState.globalTurn;
       gameState.globalTurn++;
       gameState.tokens = Math.min(8, gameState.tokens + 1);
       gameState.history.unshift(`{P${gameState.players.indexOf(player)}} discarded ${cardLetter(cidx)} which is ${card.toString()}`);
@@ -203,7 +199,7 @@ export default {
     }
 
     function hintNumber(player: Player, number: number, autoPlay = false) {
-      if(gameOver.value){
+      if(gameState.gameOver){
         alert("The game is over.");
         return;
       }
@@ -230,7 +226,7 @@ export default {
     }
 
     function hintColor(player: Player, color: number, autoPlay = false) {
-      if(gameOver.value){
+      if(gameState.gameOver){
         alert("The game is over.");
         return;
       }
@@ -279,7 +275,6 @@ export default {
       hintNumber,
       hintColor,
       debugMode,
-      gameOver,
       userId,
       setUserName,
       togglePlayerAuto: (player: Player) => {
