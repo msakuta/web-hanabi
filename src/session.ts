@@ -16,6 +16,7 @@ export class GameState {
   globalTurn = 0;
   tokens = 8;
   strikes = 0;
+  startDate = 0;
 
   constructor(){
     this.userName = "";
@@ -35,6 +36,7 @@ export class GameState {
     this.globalTurn = 0;
     this.tokens = 8;
     this.strikes = 0;
+    this.startDate = Date.now();
   }
 
   /// Defer initialization to enable event handlers
@@ -81,6 +83,7 @@ export class GameState {
       globalTurn: this.globalTurn,
       tokens: this.tokens,
       strikes: this.strikes,
+      startDate: this.startDate,
     });
   }
 
@@ -111,7 +114,10 @@ export class GameState {
     const strikes = doc.get("strikes") as number | undefined;
     if(strikes === undefined)
       return null;
-  
+    const startDate = doc.get("startDate") as number | undefined;
+    if(startDate === undefined)
+      return null;
+    
     this.history = history;
 
     this.fieldCards = fieldCards.map((data) => {
@@ -167,6 +173,7 @@ export class GameState {
     const sessionData = await this.loadSession(newId);
     this.deserializeSession(sessionData);
     this.sessionId = newId;
+    this.subscribe();
     saveSessionId(newId);
   }
 }
