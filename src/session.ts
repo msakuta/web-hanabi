@@ -6,6 +6,7 @@ import { Player } from './player';
 export class GameState {
   userName: string;
   sessionId: string;
+  unsubscriber?: () => void;
   history: string[] = [];
   fieldCards: Card[] = [];
   discardedCards: Card[] = [];
@@ -46,7 +47,13 @@ export class GameState {
 
     this.loadSession(this.sessionId).then(value => this.deserializeSession(value));
 
-    db.collection('/sessions').doc(this.sessionId).onSnapshot({
+    this.subscribe();
+  }
+
+  subscribe(){
+    if(this.unsubscriber)
+      this.unsubscriber();
+    this.unsubscriber = db.collection('/sessions').doc(this.sessionId).onSnapshot({
       next: data => {
         if(data.exists){
           this.deserializeSession(data);
@@ -56,7 +63,10 @@ export class GameState {
   }
 
   newSession(){
+    if(!confirm("This session will be discarded. Are you sure?"))
+      return;
     this.sessionId = generateSessionId();
+    this.subscribe();
     this.resetGame();
     this.updateSession();
   }
@@ -145,7 +155,7 @@ export class GameState {
       }
     }
   }
-  
+
   async loadSession(sessionId: string) {
     return await db.collection("/sessions").doc(sessionId).get();
   }
@@ -179,10 +189,8 @@ export function generateSessionId(){
 
 export function loadSessionId(){
     const st = localStorage.getItem('WebHanabiSessionId');
-    let ok = false;
     let sessionId = "";
     if(st && typeof st === "string" && st.length === sessionIdLength){
-        ok = true;
         sessionId = st;
     }
     else{

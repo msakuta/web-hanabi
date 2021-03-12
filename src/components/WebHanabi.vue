@@ -110,6 +110,7 @@ export default {
       // to play the AI. Ideally it should be handled by the server (such as Firebase Functions
       // or AWS lambda), but we're poor!
       if(playerInTurn.auto && !gameOver.value && !pendingNextMove && gameState.thePlayer === 0){
+        pendingNextMove = true;
         setTimeout(() => {
           // The player could have recreated by update from server while waiting the timeout,
           // so we need to get the instance from player list again.
@@ -120,13 +121,13 @@ export default {
           // Try setting next even after clearing pendingNextMove flag
           tryNextMove();
         }, 1000);
-        pendingNextMove = true;
       }
     }
 
     function playerCardClick(player: Player, cidx: number){
       if(turn.value !== gameState.players.indexOf(player)){
-        console.log("Hey, it's not your turn!");
+        console.log(`Hey, it's not your turn! turn: ${turn.value}, player: ${
+          gameState.players.indexOf(player)}`);
         return;
       }
       const card = player.cards[cidx];
@@ -140,7 +141,9 @@ export default {
         return;
       }
       if(turn.value !== gameState.players.indexOf(player) ||
-        !autoPlay && (player.auto || turn.value !== gameState.thePlayer)){
+        !autoPlay && (player.auto || turn.value !== gameState.thePlayer))
+      {
+        console.log(`turn: ${turn.value}, player: ${gameState.players.indexOf(player)}`);
         alert("Hey, it's not your turn!");
         return;
       }
@@ -187,6 +190,7 @@ export default {
         return;
       }
       if(turn.value !== gameState.players.indexOf(player) || !autoPlay && player.auto){
+        console.log(`turn: ${turn.value}, player: ${gameState.players.indexOf(player)}`);
         alert("Hey, it's not your turn!");
         return;
       }
@@ -214,6 +218,7 @@ export default {
         return;
       }
       if(!autoPlay && gameState.players[turn.value].auto){
+        console.log(`turn: ${turn.value}, player: ${gameState.players.indexOf(player)}`);
         alert("Hey, it's not your turn!");
         return;
       }
@@ -240,6 +245,7 @@ export default {
         return;
       }
       if(!autoPlay && gameState.players[turn.value].auto){
+        console.log(`turn: ${turn.value}, player: ${gameState.players.indexOf(player)}`);
         alert("Hey, it's not your turn!");
         return;
       }
