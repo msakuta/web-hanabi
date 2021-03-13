@@ -17,8 +17,12 @@ export function generateSessionId(){
 
 
 export function loadSessionId(){
+    const params = new URLSearchParams(document.location.search.substring(1));
+    let sessionId = params.get('sessionId');
+    if(sessionId && sessionId.length === sessionIdLength){
+        return sessionId;
+    }
     const st = localStorage.getItem('WebHanabiSessionId');
-    let sessionId = "";
     if(st && typeof st === "string" && st.length === sessionIdLength){
         sessionId = st;
     }

@@ -15,6 +15,10 @@
     <button @click="joinSession">Join session</button>
   </div>
   <div>
+    <input type="text" ref="sessionUrlInput" v-model="sessionUrl" readonly>
+    <button @click="copySessionUrl">Copy URL to clipboard</button>
+  </div>
+  <p>
     Remaining cards ({{gameState.fieldCards.length}})
     <template v-if="debugMode">
       :
@@ -22,7 +26,7 @@
         {{card.toString() + " "}}
       </span>
     </template>
-  </div>
+  </p>
   <div>
     Played cards ({{gameState.playedCards.reduce((count, cards) => count + cards.length, 0)}}/25):
     <span v-for="(cards, cidx) in gameState.playedCards" :key="cidx" :class="['card', cards.length ? cards[cards.length-1].getClass() : '']">
@@ -86,6 +90,8 @@ export default {
     const selectedCard = ref(-1);
     const turn = computed(() => gameState.globalTurn % gameState.players.length);
     const debugMode = ref(false);
+    const sessionUrl = ref(`${document.location.origin}/?sessionId=${gameState.sessionId}`);
+    const sessionUrlInput = ref(null);
 
     let pendingNextMove = false;
 
@@ -276,6 +282,18 @@ export default {
         ss.replaceAll(`{P${j}}`, j === gameState.thePlayer ? "You" : player.name), item);
     }
 
+    function copySessionUrl() {
+      const copyText = sessionUrlInput.value as HTMLInputElement | null;
+      if(!copyText){
+        return;
+      }
+
+      copyText.select();
+      copyText.setSelectionRange(0, 99999); /* For mobile devices */
+      document.execCommand("copy");
+      alert("Copied the text: " + copyText.value);
+    }
+
     return {
       gameState,
       selectedCard,
@@ -295,6 +313,9 @@ export default {
       newSession: () => gameState.newSession(),
       joinSession: () => gameState.joinSession(),
       substituteHistory,
+      sessionUrl,
+      sessionUrlInput,
+      copySessionUrl,
     }
   },
 }
