@@ -84,7 +84,7 @@ export class Card {
 export function genCards() {
   const ret: Card[] = [];
   for(let n = 0; n < 5; n++){
-    for(let i = 0; i < (n == 0 ? 3 : n < 5 ? 2 : 1); i++){
+    for(let i = 0; i < (n == 0 ? 3 : n < 4 ? 2 : 1); i++){
       for(let c = 0; c < 5; c++){
         ret.push(new Card(n, c));
       }
