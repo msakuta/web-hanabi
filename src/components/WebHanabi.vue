@@ -95,7 +95,10 @@ export default {
       const playerInTurn = gameState.players[turn.value];
 
       // Currently, only the host (the first player that has started the session) has the right
-      // to play the AI. Ideally it should be handled by the server (such as Firebase Functions
+      // to play the AI. It means if the host leaves, the AIs won't play.
+      // However, if one of the players leave, the game won't continue anyway, so
+      // I don't think it's a serious problem.
+      // Ideally it should be handled by the server (such as Firebase Functions
       // or AWS lambda), but we're poor!
       if(playerInTurn.auto && !gameState.gameOver && !pendingNextMove && gameState.thePlayer === 0){
         pendingNextMove = true;
@@ -120,9 +123,14 @@ export default {
           gameState.players.indexOf(player)}`);
         return;
       }
-      const card = player.cards[cidx];
-      console.log(`You clicked ${card.toString()}`);
       selectedCard.value = cidx;
+    }
+
+    function checkGameOver(){
+      if(gameState.gameOver){
+        gameState.history.unshift(`The game is over! Your score was ${
+          gameState.playedCards.reduce((pre, cur) => pre + cur.length, 0)}`);
+      }
     }
 
     function playCard(player: Player, cidx: number, autoPlay = false){
@@ -133,7 +141,6 @@ export default {
       if(turn.value !== gameState.players.indexOf(player) ||
         !autoPlay && (player.auto || turn.value !== gameState.thePlayer))
       {
-        console.log(`turn: ${turn.value}, player: ${gameState.players.indexOf(player)}`);
         alert("Hey, it's not your turn!");
         return;
       }
@@ -167,10 +174,7 @@ export default {
       selectedCard.value = -1;
       gameState.history.unshift(`{P${gameState.players.indexOf(player)}} played ${cardLetter(cidx)} which is ${
         card.toString()} and it was ${striked ? "a strike" : "ok"}`);
-      if(gameState.gameOver){
-        gameState.history.unshift(`The game is over! Your score was ${
-          gameState.playedCards.reduce((pre, cur) => pre + cur.length, 0)}`);
-      }
+      checkGameOver();
       tryNextMove();
     }
 
@@ -180,7 +184,6 @@ export default {
         return;
       }
       if(turn.value !== gameState.players.indexOf(player) || !autoPlay && player.auto){
-        console.log(`turn: ${turn.value}, player: ${gameState.players.indexOf(player)}`);
         alert("Hey, it's not your turn!");
         return;
       }
@@ -199,6 +202,7 @@ export default {
       gameState.globalTurn++;
       gameState.tokens = Math.min(8, gameState.tokens + 1);
       gameState.history.unshift(`{P${gameState.players.indexOf(player)}} discarded ${cardLetter(cidx)} which is ${card.toString()}`);
+      checkGameOver();
       tryNextMove();
     }
 
@@ -208,7 +212,6 @@ export default {
         return;
       }
       if(!autoPlay && gameState.players[turn.value].auto){
-        console.log(`turn: ${turn.value}, player: ${gameState.players.indexOf(player)}`);
         alert("Hey, it's not your turn!");
         return;
       }
@@ -226,6 +229,7 @@ export default {
         formatCardLetters(affected)
       } number ${number+1}`);
       gameState.globalTurn++;
+      checkGameOver();
       tryNextMove();
     }
 
@@ -235,7 +239,6 @@ export default {
         return;
       }
       if(!autoPlay && gameState.players[turn.value].auto){
-        console.log(`turn: ${turn.value}, player: ${gameState.players.indexOf(player)}`);
         alert("Hey, it's not your turn!");
         return;
       }
@@ -253,6 +256,7 @@ export default {
         formatCardLetters(affected)
       } color ${Card.prototype.getColor(color)}`);
       gameState.globalTurn++;
+      checkGameOver();
       tryNextMove();
     }
 

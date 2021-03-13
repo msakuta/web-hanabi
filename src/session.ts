@@ -91,6 +91,7 @@ export class GameState {
   }
 
   updateSession(){
+    console.log(`updateSession ${this.globalTurn}`);
     db.collection("/sessions").doc(this.sessionId).update({
       history: this.history,
       fieldCards: this.fieldCards.map(card => card.serialize()),
@@ -134,7 +135,9 @@ export class GameState {
     const startDate = doc.get("startDate") as number | undefined;
     if(startDate === undefined)
       return null;
-    
+
+    console.log(`deserializeSession ${globalTurn}`);
+
     this.history = history;
 
     this.fieldCards = fieldCards.map((data) => {

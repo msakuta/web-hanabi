@@ -35,11 +35,15 @@
         </span>
       </span>
     </span>
-    <div style="position: absolute; left: 28em; width: 5em; height: 3em;">
+    <div
+      v-if="debugMode || isSelfPlayer"
+      style="position: absolute; left: 28em; width: 5em; height: 3em;">
       <button @click="playCard(selectedCard)">Play</button>
       <button @click="discardCard(selectedCard)">Discard</button>
     </div>
-    <div style="position: absolute; left: 8em; top: 5em; width: 20em; height: 2em">
+    <div
+      v-if="debugMode || !isSelfPlayer"
+      style="position: absolute; left: 8em; top: 5em; width: 20em; height: 2em">
       Hint:
       <button v-for="i in Array(5).fill().map((_,i)=>i)"
         :key="i"

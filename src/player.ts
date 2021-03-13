@@ -89,6 +89,7 @@ export class Player {
     })();
     if(0 <= preferredCard){
       playCard(this, preferredCard, true);
+      return;
     }
     else if(gameState.tokens !== 0){
       const openNumbers = [...Array(5)].map((_, number) => number)
