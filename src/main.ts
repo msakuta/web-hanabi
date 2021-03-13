@@ -39,14 +39,9 @@ function randomizeUserId(){
 
 function loadUserId(){
     const st = localStorage.getItem('WebHanabiUserId');
-    let ok = false;
     let userId = "";
     if(st && typeof st === "string" && st.length === userIdLength){
-        ok = true;
         userId = st;
-        // var elem = document.getElementById("userId");
-        // if(elem)
-        // 	elem.value = st;
     }
     else{
         // If the data is not as expected, regenerate random id
