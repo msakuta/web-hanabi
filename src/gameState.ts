@@ -203,6 +203,8 @@ export class GameState {
     this.tokens = tokens;
     this.strikes = strikes;
     this.lastRoundBegun = lastRoundBegun === undefined ? -1 : lastRoundBegun;
+    this.startDate = startDate;
+    this.endDate = endDate;
 
     if(!foundSelf){
       const firstNonPlayer = this.players.findIndex(player => !player.playerId);

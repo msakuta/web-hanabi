@@ -41,7 +41,7 @@
   </div>
   <div class="history">
     <ul>
-      <template v-for="item in gameState.history" :key="item">
+      <template v-for="item in historyReversed" :key="item">
         <li>{{substituteHistory(item)}}</li>
       </template>
     </ul>
@@ -74,7 +74,7 @@ import { ref, reactive, computed } from 'vue';
 import PlayerCompo from './PlayerCompo.vue';
 import { Card, drawCard, cardLetter, formatCardLetters } from '../card';
 import { Player } from '../player';
-import { userId, db } from '../main';
+import { userId } from '../main';
 import { GameState } from '../gameState';
 
 
@@ -134,7 +134,7 @@ export default {
 
     function checkGameOver(){
       if(gameState.gameOver){
-        gameState.history.unshift(`The game is over! Your score was ${
+        gameState.history.push(`[${gameState.globalTurn + 1}] The game is over! Your score was ${
           gameState.playedCards.reduce((pre, cur) => pre + cur.length, 0)}`);
         gameState.endDate = Date.now();
       }
@@ -180,10 +180,10 @@ export default {
         player.cards.push(drawnCard);
       if(gameState.fieldCards.length === 0 && gameState.lastRoundBegun < 0)
         gameState.lastRoundBegun = gameState.globalTurn;
+      gameState.history.push(`[${gameState.globalTurn + 1}] {P${gameState.players.indexOf(player)}} played ${cardLetter(cidx)} which is ${
+        card.toString()} and it was ${striked ? "a strike" : "ok"}`);
       gameState.globalTurn++;
       selectedCard.value = -1;
-      gameState.history.unshift(`{P${gameState.players.indexOf(player)}} played ${cardLetter(cidx)} which is ${
-        card.toString()} and it was ${striked ? "a strike" : "ok"}`);
       checkGameOver();
       tryNextMove();
     }
@@ -209,9 +209,9 @@ export default {
         player.cards.push(drawnCard);
       if(gameState.fieldCards.length === 0 && gameState.lastRoundBegun < 0)
         gameState.lastRoundBegun = gameState.globalTurn;
+      gameState.history.push(`[${gameState.globalTurn + 1}] {P${gameState.players.indexOf(player)}} discarded ${cardLetter(cidx)} which is ${card.toString()}`);
       gameState.globalTurn++;
       gameState.tokens = Math.min(8, gameState.tokens + 1);
-      gameState.history.unshift(`{P${gameState.players.indexOf(player)}} discarded ${cardLetter(cidx)} which is ${card.toString()}`);
       checkGameOver();
       tryNextMove();
     }
@@ -234,11 +234,11 @@ export default {
         return;
       }
       const affected = player.hintNumber(number, gameState.globalTurn);
-      gameState.tokens--;
-      gameState.history.unshift(`{P${turn.value}} hinted {P${gameState.players.indexOf(player)}} about ${
+      gameState.history.push(`[${gameState.globalTurn + 1}] {P${turn.value}} hinted {P${gameState.players.indexOf(player)}} about ${
         formatCardLetters(affected)
       } number ${number+1}`);
       gameState.globalTurn++;
+      gameState.tokens--;
       checkGameOver();
       tryNextMove();
     }
@@ -261,11 +261,11 @@ export default {
         return;
       }
       const affected = player.hintColor(color, gameState.globalTurn);
-      gameState.tokens--;
-      gameState.history.unshift(`{P${turn.value}} hinted {P${gameState.players.indexOf(player)}} about ${
+      gameState.history.push(`[${gameState.globalTurn + 1}] {P${turn.value}} hinted {P${gameState.players.indexOf(player)}} about ${
         formatCardLetters(affected)
       } color ${Card.prototype.getColor(color)}`);
       gameState.globalTurn++;
+      gameState.tokens--;
       checkGameOver();
       tryNextMove();
     }
@@ -305,6 +305,11 @@ export default {
       },
       newSession: () => gameState.newSession(),
       joinSession: () => gameState.joinSession(),
+      historyReversed: computed(() => {
+        const copy = gameState.history.slice();
+        copy.reverse();
+        return copy;
+      }),
       substituteHistory,
       sessionUrl,
       sessionUrlInput,
