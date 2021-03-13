@@ -161,6 +161,9 @@ export default {
       }
       else{
         gameState.playedCards[card.color].push(card);
+        if(card.number === 4){
+          gameState.tokens = Math.min(8, gameState.tokens + 1);
+        }
       }
       if(striked)
         gameState.discardedCards.push(card);
