@@ -71,7 +71,7 @@ import PlayerCompo from './PlayerCompo.vue';
 import { Card, drawCard, cardLetter, formatCardLetters } from '../card';
 import { Player } from '../player';
 import { userId, db } from '../main';
-import { GameState } from '../session';
+import { GameState } from '../gameState';
 
 
 export default {

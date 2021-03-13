@@ -1,5 +1,5 @@
 import { Card } from './card';
-import { GameState } from './session';
+import { GameState } from './gameState';
 
 function countIf<T>(arr: Array<T>, f: ((t: T) => boolean)): number {
   return arr.reduce((accum, item) => accum + (f(item) ? 1 : 0), 0);
