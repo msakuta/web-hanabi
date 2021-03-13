@@ -18,7 +18,7 @@ export class GameState {
   tokens = 8;
   strikes = 0;
   startDate = 0;
-  lastRoundBegin = -1;
+  lastRoundBegun = -1;
   tryNextMove?: (noUpdate: boolean) => void;
 
   constructor(){
@@ -31,8 +31,8 @@ export class GameState {
     return 3 <= this.strikes || this.playedCards.reduce(
       (pre: boolean, cur: Card[]) =>
         pre && 0 < cur.length && cur[cur.length-1].number === 4, true) ||
-          0 <= this.lastRoundBegin && this.globalTurn
-            <= this.lastRoundBegin + this.players.length;
+          0 <= this.lastRoundBegun &&
+          this.lastRoundBegun + this.players.length <= this.globalTurn;
   }
 
   resetGame() {
@@ -48,7 +48,7 @@ export class GameState {
     this.tokens = 8;
     this.strikes = 0;
     this.startDate = Date.now();
-    this.lastRoundBegin = -1;
+    this.lastRoundBegun = -1;
   }
 
   /// Defer initialization to enable event handlers
@@ -93,7 +93,8 @@ export class GameState {
 
   updateSession(){
     console.log(`updateSession ${this.globalTurn}`);
-    db.collection("/sessions").doc(this.sessionId).update({
+    // eslint-disable-next-line
+    const data: any = {
       history: this.history,
       fieldCards: this.fieldCards.map(card => card.serialize()),
       discardedCards: this.discardedCards.map(card => card.serialize()),
@@ -103,7 +104,11 @@ export class GameState {
       tokens: this.tokens,
       strikes: this.strikes,
       startDate: this.startDate,
-    });
+    };
+    if(0 <= this.lastRoundBegun){
+      data.lastRoundBegun = this.lastRoundBegun;
+    }
+    db.collection("/sessions").doc(this.sessionId).update(data);
   }
 
   deserializeSession(doc?: firebase.firestore.DocumentData) {
@@ -121,6 +126,7 @@ export class GameState {
     const playedCards = doc.get("playedCards") as string[][] | undefined;
     if(!playedCards)
       return null;
+    // eslint-disable-next-line
     const players = doc.get("players") as any[] | undefined;
     if(!players)
       return null;
@@ -136,6 +142,7 @@ export class GameState {
     const startDate = doc.get("startDate") as number | undefined;
     if(startDate === undefined)
       return null;
+    const lastRoundBegun = doc.get("lastRoundBegun") as number | undefined;
 
     console.log(`deserializeSession ${globalTurn}`);
 
@@ -171,6 +178,7 @@ export class GameState {
     this.globalTurn = globalTurn;
     this.tokens = tokens;
     this.strikes = strikes;
+    this.lastRoundBegun = lastRoundBegun === undefined ? -1 : lastRoundBegun;
 
     if(!foundSelf){
       const firstNonPlayer = this.players.findIndex(player => !player.playerId);

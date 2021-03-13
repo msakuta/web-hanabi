@@ -168,8 +168,8 @@ export default {
       const drawnCard = drawCard(gameState.fieldCards, Math.floor(Math.random() * gameState.fieldCards.length));
       if(drawnCard)
         player.cards.push(drawnCard);
-      else
-        gameState.lastRoundBegin = gameState.globalTurn;
+      if(gameState.fieldCards.length === 0 && gameState.lastRoundBegun < 0)
+        gameState.lastRoundBegun = gameState.globalTurn;
       gameState.globalTurn++;
       selectedCard.value = -1;
       gameState.history.unshift(`{P${gameState.players.indexOf(player)}} played ${cardLetter(cidx)} which is ${
@@ -197,8 +197,8 @@ export default {
       const drawnCard = drawCard(gameState.fieldCards, Math.floor(Math.random() * gameState.fieldCards.length));
       if(drawnCard)
         player.cards.push(drawnCard);
-      else
-        gameState.lastRoundBegin = gameState.globalTurn;
+      if(gameState.fieldCards.length === 0 && gameState.lastRoundBegun < 0)
+        gameState.lastRoundBegun = gameState.globalTurn;
       gameState.globalTurn++;
       gameState.tokens = Math.min(8, gameState.tokens + 1);
       gameState.history.unshift(`{P${gameState.players.indexOf(player)}} discarded ${cardLetter(cidx)} which is ${card.toString()}`);
