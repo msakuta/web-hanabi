@@ -1,5 +1,5 @@
 import firebase from 'firebase';
-import { db, userId, loadUserName } from './main';
+import { offlineMode, db, userId, loadUserName } from './main';
 import { Card, genCards, drawCard } from './card';
 import { Player } from './player';
 import { loadSessionId, saveSessionId, generateSessionId } from './session';
@@ -64,7 +64,23 @@ export class GameState {
     this.subscribe();
   }
 
+  setUserName(name: string){
+    this.userName = name;
+    if(offlineMode || !db){
+      this.players[this.thePlayer].name = name;
+      return;
+    }
+    db.collection("/users").doc(userId).set({name});
+    if(this.sessionId && 0 <= this.thePlayer){
+      this.players[this.thePlayer].name = name;
+      this.updateSession();
+    }
+  }
+
   subscribe(){
+    if(offlineMode || !db){
+      return;
+    }
     if(this.unsubscriber)
       this.unsubscriber();
     this.unsubscriber = db.collection('/sessions').doc(this.sessionId).onSnapshot({
@@ -92,6 +108,9 @@ export class GameState {
   }
 
   updateSession(){
+    if(offlineMode || !db){
+      return;
+    }
     console.log(`updateSession ${this.globalTurn}`);
     // eslint-disable-next-line
     const data: any = {
@@ -192,6 +211,9 @@ export class GameState {
   }
 
   async loadSession(sessionId: string) {
+    if(offlineMode || !db){
+        return;
+    }
     return await db.collection("/sessions").doc(sessionId).get();
   }
 

@@ -269,14 +269,6 @@ export default {
       tryNextMove();
     }
 
-    function setUserName(){
-      db.collection("/users").doc(userId).set({name: gameState.userName});
-      if(gameState.sessionId && 0 <= gameState.thePlayer){
-        gameState.players[gameState.thePlayer].name = gameState.userName;
-        gameState.updateSession();
-      }
-    }
-
     function substituteHistory(item: string){
       return gameState.players.reduce((ss, player, j) =>
         ss.replaceAll(`{P${j}}`, j === gameState.thePlayer ? "You" : player.name), item);
@@ -305,7 +297,7 @@ export default {
       hintColor,
       debugMode,
       userId,
-      setUserName,
+      setUserName: (name: string) => gameState.setUserName(name),
       togglePlayerAuto: (player: Player) => {
         player.auto = !player.auto;
         tryNextMove();
