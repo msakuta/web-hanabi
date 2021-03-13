@@ -43,18 +43,22 @@
     </div>
     <div
       v-if="debugMode || !isSelfPlayer"
-      style="position: absolute; left: 8em; top: 5em; width: 20em; height: 2em">
+      style="position: absolute; left: 3em; top: 5em; width: 25em; height: 2em">
       Hint:
-      <button v-for="i in Array(5).fill().map((_,i)=>i)"
-        :key="i"
-        @click="hintNumber(i)">
-        {{i + 1}}
-      </button>
-      <button v-for="i in Array(5).fill().map((_,i)=>i)"
-        :key="i"
-        @click="hintColor(i)">
-        {{getColor(i)}}
-      </button>
+      <template v-for="i in Array(5).fill().map((_,i)=>i)"
+        :key="i">
+        <button @click="hintNumber(i)">
+          {{i + 1}}
+        </button>
+        &nbsp;
+      </template>
+      <template v-for="i in Array(5).fill().map((_,i)=>i)"
+        :key="i">
+        <button @click="hintColor(i)">
+          {{getColor(i)}}
+        </button>
+        &nbsp;
+      </template>
     </div>
   </div>
 </template>
