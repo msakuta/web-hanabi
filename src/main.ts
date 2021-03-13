@@ -4,16 +4,16 @@ import firebase from 'firebase';
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-// Create .env.local and put VUE_APP_API_KEY to grant access.
+// Create .env.local and put VUE_APP_API_KEY and others to grant access.
 // Note that this is not secure at all!
 const firebaseConfig = {
     apiKey: process.env.VUE_APP_API_KEY,
-    authDomain: "web-hanabi.firebaseapp.com",
-    projectId: "web-hanabi",
-    storageBucket: "web-hanabi.appspot.com",
-    messagingSenderId: "486326971095",
-    appId: "1:486326971095:web:cba7224b5b6ce39cb39e92",
-    measurementId: "G-93MV15EL3B"
+    authDomain: process.env.VUE_APP_AUTH_DOMAIN,
+    projectId: process.env.VUE_APP_PROJECT_ID,
+    storageBucket: process.env.VUE_APP_STORAGE_BUCKET,
+    messagingSenderId: process.env.VUE_APP_MESSAGING_SENDER_ID,
+    appId: process.env.VUE_APP_APP_ID,
+    measurementId: process.env.VUE_APP_MEASUREMENT_ID,
 };
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
