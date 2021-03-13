@@ -90,7 +90,7 @@ export default {
     const selectedCard = ref(-1);
     const turn = computed(() => gameState.globalTurn % gameState.players.length);
     const debugMode = ref(false);
-    const sessionUrl = ref(`${document.location.origin}/?sessionId=${gameState.sessionId}`);
+    const sessionUrl = computed(() => `${document.location.origin}${document.location.pathname}?sessionId=${gameState.sessionId}`);
     const sessionUrlInput = ref(null);
 
     let pendingNextMove = false;
