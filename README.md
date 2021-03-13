@@ -41,3 +41,9 @@ npm run lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
+## External Libraries
+
+This application uses following libraries.
+
+* [Google Firebase / Firestore](https://firebase.google.com/?hl=ja) to store score statistics.

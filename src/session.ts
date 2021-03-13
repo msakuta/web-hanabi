@@ -11,8 +11,9 @@ export function generateSessionId(){
         sessionId += Math.floor(Math.random() * 16).toString(16);
     localStorage.setItem('WebHanabiSessionId', sessionId);
     // At this point the sessionId in users should be initialized.
-    db.collection("/sessions").doc(sessionId).set({});
-    return sessionId;
+    const doc = db.collection("/sessions").doc();
+    doc.set({});
+    return doc.id;
 }
 
 
