@@ -136,6 +136,7 @@ export default {
       if(gameState.gameOver){
         gameState.history.unshift(`The game is over! Your score was ${
           gameState.playedCards.reduce((pre, cur) => pre + cur.length, 0)}`);
+        gameState.endDate = Date.now();
       }
     }
 

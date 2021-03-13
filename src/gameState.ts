@@ -18,6 +18,7 @@ export class GameState {
   tokens = 8;
   strikes = 0;
   startDate = 0;
+  endDate?: number;
   lastRoundBegun = -1;
   tryNextMove?: (noUpdate: boolean) => void;
 
@@ -48,6 +49,7 @@ export class GameState {
     this.tokens = 8;
     this.strikes = 0;
     this.startDate = Date.now();
+    this.endDate = undefined;
     this.lastRoundBegun = -1;
   }
 
@@ -127,6 +129,9 @@ export class GameState {
     if(0 <= this.lastRoundBegun){
       data.lastRoundBegun = this.lastRoundBegun;
     }
+    if(this.endDate){
+      data.endDate = this.endDate;
+    }
     db.collection("/sessions").doc(this.sessionId).update(data);
   }
 
@@ -161,6 +166,7 @@ export class GameState {
     const startDate = doc.get("startDate") as number | undefined;
     if(startDate === undefined)
       return null;
+    const endDate = doc.get("endDate") as number | undefined;
     const lastRoundBegun = doc.get("lastRoundBegun") as number | undefined;
 
     console.log(`deserializeSession ${globalTurn}`);
