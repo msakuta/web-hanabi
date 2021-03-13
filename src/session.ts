@@ -7,15 +7,12 @@ export function generateSessionId(){
   if(offlineMode || !db){
     return "";
   }
-  let sessionId = "";
   // This is not cryptographically safe random number, but we'd settle for this
   // because this application is not serious.
-  for(let i = 0; i < sessionIdLength; i++)
-    sessionId += Math.floor(Math.random() * 16).toString(16);
-  localStorage.setItem('WebHanabiSessionId', sessionId);
   // At this point the sessionId in users should be initialized.
   const doc = db.collection("/sessions").doc();
   doc.set({});
+  localStorage.setItem('WebHanabiSessionId', doc.id);
   return doc.id;
 }
 
