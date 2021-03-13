@@ -30,19 +30,14 @@ else{
 export const db = offlineMode ? null : firebase.firestore();
 
 
-const userIdLength = 40; // We assume 40 bytes are long enough for collision avoidance until 16^20 ~ 1.2e24 users.
-
-function randomizeUserId(){
+function generateUserId(){
   if(offlineMode || !db){
       return "";
   }
-  let userId = "";
-  // This is not cryptographically safe random number, but we'd settle for this
-  // because this application is not serious.
-  for(let i = 0; i < userIdLength; i++)
-      userId += Math.floor(Math.random() * 16).toString(16);
+  const doc = db.collection("/users").doc();
+  doc.set({name: "new user"});
+  const userId = doc.id;
   localStorage.setItem('WebHanabiUserId', userId);
-  db.collection("/users").doc(userId).set({name: "new user"});
   return userId;
 }
 
@@ -52,12 +47,12 @@ function loadUserId(){
   }
   const st = localStorage.getItem('WebHanabiUserId');
   let userId = "";
-  if(st && typeof st === "string" && st.length === userIdLength){
-      userId = st;
+  if(st && typeof st === "string" && st.length !== 0){
+    userId = st;
   }
   else{
-      // If the data is not as expected, regenerate random id
-      userId = randomizeUserId();
+    // If the data is not as expected, regenerate random id
+    userId = generateUserId();
   }
   return userId;
 }

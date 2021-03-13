@@ -66,15 +66,14 @@ export class GameState {
     this.subscribe();
   }
 
-  setUserName(name: string){
-    this.userName = name;
+  setUserName(){
     if(offlineMode || !db){
-      this.players[this.thePlayer].name = name;
+      this.players[this.thePlayer].name = this.userName;
       return;
     }
-    db.collection("/users").doc(userId).set({name});
+    db.collection("/users").doc(userId).set({name: this.userName});
     if(this.sessionId && 0 <= this.thePlayer){
-      this.players[this.thePlayer].name = name;
+      this.players[this.thePlayer].name = this.userName;
       this.updateSession();
     }
   }

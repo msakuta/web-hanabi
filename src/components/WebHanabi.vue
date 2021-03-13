@@ -298,7 +298,7 @@ export default {
       hintColor,
       debugMode,
       userId,
-      setUserName: (name: string) => gameState.setUserName(name),
+      setUserName: () => gameState.setUserName(),
       togglePlayerAuto: (player: Player) => {
         player.auto = !player.auto;
         tryNextMove();
