@@ -1,23 +1,64 @@
 import { Card } from './card';
+import { GameState } from './gameState';
 
 function countIf<T>(arr: Array<T>, f: ((t: T) => boolean)): number {
   return arr.reduce((accum, item) => accum + (f(item) ? 1 : 0), 0);
 }
 
+interface SerializedPlayer {
+  name: string;
+  playerId?: string;
+  auto: boolean;
+  cards: string[];
+  lastHintedNumber?: { number: number; turn: number };
+  lastHintedColor?: { color: number; turn: number };
+}
+
 export class Player {
+  name = "";
+  playerId?: string;
   auto = false;
   cards: Card[];
   lastHintedNumber?: { number: number; turn: number };
   lastHintedColor?: { color: number; turn: number };
 
-  constructor(cards: Card[], auto = false, drawCard: ((cards: Card[], cidx: number) => Card)){
+
+  constructor(name: string, cards: Card[], auto = false, drawCard?: ((cards: Card[], cidx: number) => Card)){
+    this.name = name;
     this.auto = auto;
-    this.cards = [...Array(4)].map(() => drawCard(cards, Math.floor(Math.random() * cards.length)));
+    this.cards = drawCard ?
+      [...Array(4)].map(() => drawCard(cards, Math.floor(Math.random() * cards.length))) : [];
   }
 
-  think(players: Player[],
-    playedCards: Card[][],
-    tokens: number,
+  serialize(): SerializedPlayer {
+    const ret: SerializedPlayer = {
+      name: this.name,
+      auto: this.auto,
+      cards: this.cards.map(card => card.serialize()),
+    };
+    if(this.playerId)
+      ret.playerId = this.playerId;
+    if(this.lastHintedNumber)
+      ret.lastHintedNumber = this.lastHintedNumber;
+    if(this.lastHintedColor)
+      ret.lastHintedColor = this.lastHintedColor;
+    return ret;
+  }
+
+  deserialize(data: SerializedPlayer) {
+    this.name = data.name;
+    this.playerId = data.playerId;
+    this.auto = data.auto;
+    this.cards = data.cards.map(data => {
+      const card = new Card;
+      card.deserialize(data);
+      return card;
+    })
+    this.lastHintedNumber = data.lastHintedNumber;
+    this.lastHintedColor = data.lastHintedColor;
+  }
+
+  think(gameState: GameState,
     turn: number,
     playCard: ((p: Player, cidx: number, autoPlay: boolean) => void),
     discardCard: ((p: Player, cidx: number, autoPlay: boolean) => void),
@@ -29,8 +70,8 @@ export class Player {
         // If there was a hint for a number in the last round and there is open place to put a card,
         // assume it was a suggestion to play it.
         const number = hintedNumber.number;
-        if(turn - players.length <= hintedNumber.turn &&
-          playedCards.find((cards: Card[]) =>
+        if(gameState.globalTurn - gameState.players.length <= hintedNumber.turn &&
+          gameState.playedCards.find((cards: Card[]) =>
             (number === 0 || cards[number - 1]) && !cards[number]))
         {
           return this.cards.findIndex(card => card.possibleNumbers === (1 << number));
@@ -41,21 +82,22 @@ export class Player {
         // If there was a hint for only one card in the last round, assume it was a suggestion to
         // play it.
         const hitColors = countIf(this.cards, card => card.color === hintedColor.color);
-        if(hitColors === 1 && turn - players.length <= hintedColor.turn)
+        if(hitColors === 1 && gameState.globalTurn - gameState.players.length <= hintedColor.turn)
           return this.cards.findIndex(card => card.color === hintedColor.color);
       }
       return -1;
     })();
     if(0 <= preferredCard){
       playCard(this, preferredCard, true);
+      return;
     }
-    else if(tokens !== 0){
+    else if(gameState.tokens !== 0){
       const openNumbers = [...Array(5)].map((_, number) => number)
-        .filter(number => !!playedCards.find((cards: Card[]) =>
+        .filter(number => !!gameState.playedCards.find((cards: Card[]) =>
           (number === 0 || cards[number - 1]) && !cards[number]));
 
       // Check others' cards to see if I can give a hint.
-      for(const player of players){
+      for(const player of gameState.players){
         if(player === this)
           continue;
         // Hint unhinted open number for another player
@@ -66,7 +108,7 @@ export class Player {
             if(card.number === number)
               numHintableCards++;
             if(card.number === number && card.possibleNumbers !== (1 << number) &&
-              playedCards.find((cards: Card[], color) =>
+              gameState.playedCards.find((cards: Card[], color) =>
                 (number === 0 || cards[number - 1]) && !cards[number] && color === card.color))
             {
               numPlayableCards++;
@@ -80,10 +122,10 @@ export class Player {
           }
         }
       }
-
-      // Dumb strategy to discard from rightmost
-      discardCard(this, this.cards.length-1, true);
     }
+
+    // Nothing useful to do. Dumb strategy to discard from rightmost
+    discardCard(this, this.cards.length-1, true);
   }
 
   hintNumber(number: number, turn: number){
