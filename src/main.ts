@@ -25,6 +25,8 @@ else{
   firebase.analytics();
 }
 
+export const enableDebugMode = process.env.VUE_APP_ENABLE_DEBUG === "1";
+
 
 // Initialize Cloud Firestore through Firebase
 export const db = offlineMode ? null : firebase.firestore();

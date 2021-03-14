@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="enableDebugMode">
     <label>
       <input type="checkbox" v-model="debugMode">Debug mode
     </label>
@@ -74,7 +74,7 @@ import { ref, reactive, computed } from 'vue';
 import PlayerCompo from './PlayerCompo.vue';
 import { Card, drawCard, cardLetter, formatCardLetters } from '../card';
 import { Player } from '../player';
-import { userId } from '../main';
+import { userId, enableDebugMode } from '../main';
 import { GameState } from '../gameState';
 
 
@@ -296,6 +296,7 @@ export default {
       discardCard,
       hintNumber,
       hintColor,
+      enableDebugMode,
       debugMode,
       userId,
       setUserName: () => gameState.setUserName(),
