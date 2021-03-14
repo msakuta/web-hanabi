@@ -21,7 +21,7 @@ Feel free to clone the repo and edit [src/player.ts](src/player.ts) to improve t
 
 ## Offline singleplayer
 
-If you clone this repo and start as instructed in [Project setup](#project setup),
+If you clone this repo and start as instructed in [Project setup](#project-setup),
 you will use offline mode by default.
 
 In this mode, there are only you and other AI players.
