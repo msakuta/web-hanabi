@@ -337,7 +337,7 @@ a {
 .history {
   border: solid 1px #003f3f;
   position: relative;
-  height: 6em;
+  height: 10em;
   overflow-y: scroll;
 }
 .card {
