@@ -22,14 +22,14 @@
         </div>
         <span v-for="j in Array(5).fill().map((_, i)=>i)"
           :key="j"
-          :class="['small', card.possibleNumbers & (1 << j) ? 'possible' : 'notPossible']"
+          :class="cardNumberHintClass(card, j)"
           :style="`left: ${j * 5 + 1}px;`">
           {{j + 1}}
         </span>
         <br>
         <span v-for="j in Array(5).fill().map((_, i)=>i)"
           :key="j"
-          :class="['small', card.possibleColors & (1 << j) ? 'possible' : 'notPossible']"
+          :class="cardColorHintClass(card, j)"
           :style="`left: ${j * 5 + 1}px;`">
           {{getColor(j)}}
         </span>
@@ -43,9 +43,9 @@
     </div>
     <div
       v-if="debugMode || !isSelfPlayer"
-      style="position: absolute; left: 3em; top: 5em; width: 25em; height: 2em">
-      <span class="noselect hintButton" @click="doHint">
-        Hint:
+      style="position: absolute; left: 3em; top: 5em; width: 30em; height: 2em">
+      <span :class="['noselect', 'hintButton', selectedHintPlayer ? 'hintButtonActive' : '']" @click="doHint">
+        Hint
       </span>
       <template v-for="i in Array(5).fill().map((_,i)=>i)"
         :key="i">
@@ -104,13 +104,53 @@ export default {
       discardCard: (idx: number) => context.emit("discardCard", idx),
       getColor: (i: number) => Card.prototype.getColor(i),
       selectHint: (idx: number) => {
-        selectedHint.value = idx;
-        context.emit("selectHint");
+        const disabled = selectedHint.value === idx && props.selectedHintPlayer;
+        if(disabled){
+          selectedHint.value = -1;
+        }
+        else{
+          selectedHint.value = idx;
+        }
+        context.emit("selectHint", disabled);
       },
       doHint: () => {if(0 <= selectedHint.value){ context.emit("doHint", selectedHint.value) }},
       cardLetter,
       getClass,
       selectedHint,
+      cardNumberHintClass: (card: Card, idx: number) => {
+        const ret = ['small', card.possibleNumbers & (1 << idx) ? 'possible' : 'notPossible'];
+        if(props.selectedHintPlayer && selectedHint.value < 5){
+          if(card.number === selectedHint.value){
+            if(idx === selectedHint.value){
+              ret.push('selectedHint');
+            }
+            else if(card.possibleNumbers & (1 << idx)){
+              ret.push("selectedAntiHint");
+            }
+          }
+          else if(idx === selectedHint.value && card.possibleNumbers & (1 << idx)){
+            ret.push("selectedAntiHint");
+          }
+        }
+        return ret;
+      },
+      cardColorHintClass: (card: Card, idx: number) => {
+        const ret = ['small', card.possibleColors & (1 << idx) ? 'possible' : 'notPossible'];
+        if(props.selectedHintPlayer && 5 <= selectedHint.value){
+          if(card.color + 5 === selectedHint.value){
+            if(idx + 5 === selectedHint.value){
+              ret.push('selectedHint');
+            }
+            else if(card.possibleColors & (1 << idx)){
+              ret.push("selectedAntiHint");
+            }
+          }
+          else if(idx + 5 === selectedHint.value && card.possibleColors & (1 << idx)){
+            ret.push("selectedAntiHint");
+          }
+        }
+        return ret;
+      },
     }
   },
 }
@@ -194,12 +234,27 @@ export default {
 .notPossible {
   color: #1c1e2f
 }
+.selectedHint {
+  color: #7fffff;
+  background-color: #3f7f7f;
+}
+.selectedAntiHint {
+  color: #3f7f7f;
+  background-color: #000000;
+}
 .cardLetter {
   color: #7b9cbc
 }
 .hintButton {
-  border: 3px ridge #3f7f7f;
+  color: #3f9faf;
+  background-color: #0f2f2f;
+  border: 3px ridge #6f9f9f;
   padding: 0.25em;
+  margin: 0.25em;
+}
+.hintButtonActive {
+  color: #1f3f3f;
+  background-color: #7fffff;
 }
 .hintSelectButton {
   position: relative;

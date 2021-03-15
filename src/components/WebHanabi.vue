@@ -65,7 +65,7 @@
     @playerCardClick="(cidx) => playerCardClick(player, cidx)"
     @playCard="(cidx) => playCard(player, cidx)"
     @discardCard="(cidx) => discardCard(player, cidx)"
-    @selectHint="selectedHintPlayer = idx"
+    @selectHint="(disabled) => selectHint(idx, disabled)"
     @doHint="(hidx) => doHint(player, hidx)">
   </player-compo>
 </template>
@@ -304,6 +304,8 @@ export default {
           else if(5 <= idx && idx < 10){
             hintColor(player, idx - 5);
           }
+          // Reset the selected hint for the next round
+          selectedHintPlayer.value = -1;
         }
       },
       hintColor,
@@ -327,6 +329,14 @@ export default {
       sessionUrl,
       sessionUrlInput,
       copySessionUrl,
+      selectHint: (idx: number, disabled: boolean) => {
+        if(disabled) {
+          selectedHintPlayer.value = -1;
+        }
+        else {
+          selectedHintPlayer.value = idx;
+        }
+      },
     }
   },
 }
