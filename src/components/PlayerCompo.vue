@@ -251,6 +251,7 @@ export default {
   border: 3px ridge #6f9f9f;
   padding: 0.25em;
   margin: 0.25em;
+  margin-right: 1em;
 }
 .hintButtonActive {
   color: #1f3f3f;
