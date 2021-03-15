@@ -45,15 +45,7 @@ export class Card {
   }
 
   getClass() {
-    switch(this.color){
-      case 0: return "red";
-      case 1: return "green";
-      case 2: return "blue";
-      case 3: return "yellow";
-      case 4: return "white";
-      case 5: return "rainbow";
-      default: return "";
-    }
+    return getClass(this.color);
   }
 
   /// Returns whether the hint affected the possibility of the card
@@ -121,3 +113,16 @@ function fromColor(color: string): number {
     default: return -1;
   }
 }
+
+export function getClass(color: number) {
+  switch(color){
+    case 0: return "red";
+    case 1: return "green";
+    case 2: return "blue";
+    case 3: return "yellow";
+    case 4: return "white";
+    case 5: return "rainbow";
+    default: return "";
+  }
+}
+

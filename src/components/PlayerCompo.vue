@@ -47,17 +47,15 @@
       Hint:
       <template v-for="i in Array(5).fill().map((_,i)=>i)"
         :key="i">
-        <button @click="hintNumber(i)">
+        <span class="hintButton" @click="hintNumber(i)">
           {{i + 1}}
-        </button>
-        &nbsp;
+        </span>
       </template>
       <template v-for="i in Array(5).fill().map((_,i)=>i)"
         :key="i">
-        <button @click="hintColor(i)">
+        <span :class="[getClass(i), 'hintButton']" @click="hintColor(i)">
           {{getColor(i)}}
-        </button>
-        &nbsp;
+        </span>
       </template>
     </div>
   </div>
@@ -65,7 +63,7 @@
 
 <script lang="ts">
 import { SetupContext } from 'vue';
-import { Card, cardLetter } from '../card';
+import { Card, cardLetter, getClass } from '../card';
 import { Player } from '../player';
 
 type Props = {
@@ -98,6 +96,7 @@ export default {
       hintNumber: (idx: number) => context.emit("hintNumber", idx),
       hintColor: (idx: number) => context.emit("hintColor", idx),
       cardLetter,
+      getClass,
     }
   },
 }
@@ -109,8 +108,8 @@ export default {
   position: absolute;
   left: 0;
   width: 3.5em;
-  padding: 4px;
-  margin: 4px;
+  padding: 0.25em;
+  margin: 0.25em;
   font-family: 'Courier New', Courier, monospace;
 }
 /* Class that prevents text selection by mouse dragging.
@@ -154,7 +153,7 @@ export default {
 }
 .frame {
   position: relative;
-  line-height: 3em;
+  line-height: 2.5em;
   left: 0;
   width: 35em;
   height: 7em;
@@ -183,5 +182,14 @@ export default {
 }
 .cardLetter {
   color: #7b9cbc
+}
+.hintButton {
+  position: relative;
+  display: inline-block;
+  width: 2em;
+  height: 2em;
+  vertical-align: middle;
+  border: 1px solid #3f7f7f;
+  line-height: 2em;
 }
 </style>
