@@ -44,16 +44,23 @@
     <div
       v-if="debugMode || !isSelfPlayer"
       style="position: absolute; left: 3em; top: 5em; width: 25em; height: 2em">
-      Hint:
+      <span class="noselect hintButton" @click="doHint">
+        Hint:
+      </span>
       <template v-for="i in Array(5).fill().map((_,i)=>i)"
         :key="i">
-        <span class="hintButton" @click="hintNumber(i)">
+        <span
+          :class="['noselect', 'hintSelectButton', selectedHintPlayer && i === selectedHint ? 'hintSelected' : '']"
+          @click="selectHint(i)">
           {{i + 1}}
         </span>
       </template>
       <template v-for="i in Array(5).fill().map((_,i)=>i)"
         :key="i">
-        <span :class="[getClass(i), 'hintButton']" @click="hintColor(i)">
+        <span
+          :class="['noselect', getClass(i), 'hintSelectButton',
+            selectedHintPlayer && i + 5 === selectedHint ? 'hintSelected' : '']"
+          @click="selectHint(i + 5)">
           {{getColor(i)}}
         </span>
       </template>
@@ -62,7 +69,7 @@
 </template>
 
 <script lang="ts">
-import { SetupContext } from 'vue';
+import { SetupContext, ref } from 'vue';
 import { Card, cardLetter, getClass } from '../card';
 import { Player } from '../player';
 
@@ -73,6 +80,7 @@ type Props = {
   player: Player;
   selectedCard: number;
   activeTurn: boolean;
+  selectedHintPlayer: boolean;
 };
 
 export default {
@@ -84,19 +92,25 @@ export default {
     player: Object,
     selectedCard: Number,
     activeTurn: Boolean,
+    selectedHintPlayer: Boolean,
   },
 
   setup(props: Props, context: SetupContext){
+    const selectedHint = ref(-1);
     return {
       playerAutoClick: () => context.emit("playerAutoClick"),
       playerCardClick: (idx: number) => context.emit("playerCardClick", idx),
       playCard: (idx: number) => context.emit("playCard", idx),
       discardCard: (idx: number) => context.emit("discardCard", idx),
       getColor: (i: number) => Card.prototype.getColor(i),
-      hintNumber: (idx: number) => context.emit("hintNumber", idx),
-      hintColor: (idx: number) => context.emit("hintColor", idx),
+      selectHint: (idx: number) => {
+        selectedHint.value = idx;
+        context.emit("selectHint");
+      },
+      doHint: () => {if(0 <= selectedHint.value){ context.emit("doHint", selectedHint.value) }},
       cardLetter,
       getClass,
+      selectedHint,
     }
   },
 }
@@ -184,6 +198,10 @@ export default {
   color: #7b9cbc
 }
 .hintButton {
+  border: 3px ridge #3f7f7f;
+  padding: 0.25em;
+}
+.hintSelectButton {
   position: relative;
   display: inline-block;
   width: 2em;
@@ -191,5 +209,8 @@ export default {
   vertical-align: middle;
   border: 1px solid #3f7f7f;
   line-height: 2em;
+}
+.hintSelected {
+  border: 2px solid #7fffff;
 }
 </style>

@@ -60,12 +60,13 @@
     :debugMode="debugMode"
     :activeTurn="!gameState.gameOver && turn === idx"
     :selectedCard="selectedCard"
+    :selectedHintPlayer="selectedHintPlayer === idx"
     @playerAutoClick="togglePlayerAuto(player)"
     @playerCardClick="(cidx) => playerCardClick(player, cidx)"
     @playCard="(cidx) => playCard(player, cidx)"
     @discardCard="(cidx) => discardCard(player, cidx)"
-    @hintNumber="(number) => hintNumber(player, number)"
-    @hintColor="(color) => hintColor(player, color)">
+    @selectHint="selectedHintPlayer = idx"
+    @doHint="(hidx) => doHint(player, hidx)">
   </player-compo>
 </template>
 
@@ -92,6 +93,7 @@ export default {
     const debugMode = ref(false);
     const sessionUrl = computed(() => `${document.location.origin}${document.location.pathname}?sessionId=${gameState.sessionId}`);
     const sessionUrlInput = ref(null);
+    const selectedHintPlayer = ref(-1);
 
     let pendingNextMove = false;
 
@@ -294,11 +296,21 @@ export default {
       playerCardClick,
       playCard,
       discardCard,
-      hintNumber,
+      doHint: (player: Player, idx: number) => {
+        if(gameState.players[selectedHintPlayer.value] === player){
+          if(0 <= idx && idx < 5){
+            hintNumber(player, idx);
+          }
+          else if(5 <= idx && idx < 10){
+            hintColor(player, idx - 5);
+          }
+        }
+      },
       hintColor,
       enableDebugMode,
       debugMode,
       userId,
+      selectedHintPlayer,
       setUserName: () => gameState.setUserName(),
       togglePlayerAuto: (player: Player) => {
         player.auto = !player.auto;
