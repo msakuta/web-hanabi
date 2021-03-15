@@ -223,7 +223,7 @@ export default {
         alert("The game is over.");
         return;
       }
-      if(!autoPlay && gameState.players[turn.value].auto){
+      if(!autoPlay && gameState.players[turn.value].auto || turn.value !== gameState.thePlayer){
         alert("Hey, it's not your turn!");
         return;
       }
